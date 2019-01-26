@@ -21,6 +21,7 @@ if (CLIENT) then
 end
 util.AddNetworkString("drawMute")
 
+HOST = 'localhost'
 PORT = 37405
 PREFIX = "[TTT Discord Bot] "
 FILEPATH = "ttt_discord_bot.dat"
@@ -40,7 +41,7 @@ end
 
 
 function GET(req,params,cb,tries)
-	http.Fetch("http://localhost:"..PORT,function(res)
+	http.Fetch("http://"..HOST..":"..PORT,function(res)
 		--print(res)
 		cb(util.JSONToTable(res))
 	end,function(err)
