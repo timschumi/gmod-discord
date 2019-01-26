@@ -21,11 +21,12 @@ if (CLIENT) then
 end
 util.AddNetworkString("drawMute")
 
-HOST = 'localhost'
+HOST = '<fill-in>'
 PORT = 37405
 PREFIX = "[Discord] "
 FILEPATH = "ttt_discord_bot.dat"
 TRIES = 3
+SERVER_ID="<fill-in>"
 
 muted = {}
 
@@ -41,7 +42,7 @@ end
 
 
 function GET(req,params,cb,tries)
-	http.Fetch("http://"..HOST..":"..PORT,function(res)
+	http.Fetch("http://"..HOST..":"..PORT..req,function(res)
 		--print(res)
 		cb(util.JSONToTable(res))
 	end,function(err)
@@ -74,7 +75,7 @@ end
 function mute(ply)
 	if (ids[ply:SteamID()]) then
 		if (!isMuted(ply)) then
-			GET("mute",{mute=true,id=ids[ply:SteamID()]},function(res)
+			GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/1",{},function(res)
 				if (res) then
 					--PrintTable(res)
 					if (res.success) then
@@ -83,7 +84,7 @@ function mute(ply)
 						muted[ply] = true
 					end
 					if (res.error) then
-						print(PREFIX.."Error: "..res.err)
+						print(PREFIX.."Error: "..res.error)
 					end
 				end
 
@@ -96,7 +97,7 @@ function unmute(ply)
 	if (ply) then
 		if (ids[ply:SteamID()]) then
 			if (isMuted(ply)) then
-				GET("mute",{mute=false,id=ids[ply:SteamID()]},function(res)
+				GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/0", {},function(res)
 					if (res.success) then
 						ply:PrintMessage(HUD_PRINTCENTER,"You're no longer muted in discord!")
 						sendClientIconInfo(ply,false)
@@ -123,9 +124,10 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
   for p, c in utf8.codes(tag) do
 	tag_utf8 = string.Trim(tag_utf8.." "..c)
   end
-	GET("connect",{tag=tag_utf8},function(res)
-		if (res.answer == 0) then ply:PrintMessage(HUD_PRINTTALK,"No guilde member with a discord tag like '"..tag.."' found.") end
-		if (res.answer == 1) then ply:PrintMessage(HUD_PRINTTALK,"Found more than one user with a discord tag like '"..tag.."'. Please specify!") end
+	GET("/connect/"..SERVER_ID.."/"..tag,{tag=tag_utf8},function(res)
+                if (res.error ~= nil) then
+                    ply:PrintMessage(HUD_PRINTTALK,"Error: "..res.error)
+                end
 		if (res.tag && res.id) then
 			ply:PrintMessage(HUD_PRINTTALK,"Discord tag '"..res.tag.."' successfully boundet to SteamID '"..ply:SteamID().."'") --lie! actually the discord id is bound! ;)
 			ids[ply:SteamID()] = res.id
