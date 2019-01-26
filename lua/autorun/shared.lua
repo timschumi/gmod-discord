@@ -23,7 +23,7 @@ util.AddNetworkString("drawMute")
 
 HOST = 'localhost'
 PORT = 37405
-PREFIX = "[TTT Discord Bot] "
+PREFIX = "[Discord] "
 FILEPATH = "ttt_discord_bot.dat"
 TRIES = 3
 
