@@ -68,46 +68,55 @@ function isMuted(ply)
 end
 
 function mute(ply)
-	if (ids[ply:SteamID()]) then
-		if (!isMuted(ply)) then
-			GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/1",{},function(res)
-				if (res) then
-					if (res.success) then
-						ply:PrintMessage(HUD_PRINTCENTER,"You're muted in discord!")
-						sendClientIconInfo(ply,true)
-						muted[ply] = true
-					end
-					if (res.error) then
-						log_con_err("Mute error: "..res.error)
-					end
-				end
-
-			end)
-		end
+	if (not ids[ply:SteamID()]) then
+		return
 	end
+
+	if (!isMuted(ply)) then
+		return
+	end
+
+	GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/1",{},function(res)
+		if (res) then
+			if (res.success) then
+				ply:PrintMessage(HUD_PRINTCENTER,"You're muted in discord!")
+				sendClientIconInfo(ply,true)
+				muted[ply] = true
+			end
+			if (res.error) then
+				log_con_err("Mute error: "..res.error)
+			end
+		end
+
+	end)
 end
 
 function unmute(ply)
-	if (ply) then
-		if (ids[ply:SteamID()]) then
-			if (isMuted(ply)) then
-				GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/0", {},function(res)
-					if (res.success) then
-						ply:PrintMessage(HUD_PRINTCENTER,"You're no longer muted in discord!")
-						sendClientIconInfo(ply,false)
-						muted[ply] = false
-					end
-					if (res.error) then
-						log_con_err("Unmuting error: "..res.error)
-					end
-				end)
-			end
-		end
-	else
+	if (not ply) then
 		for ply,val in pairs(muted) do
 			if val then unmute(ply) end
 		end
+		return
 	end
+
+	if (not ids[ply:SteamID()]) then
+		return
+	end
+
+	if (not isMuted(ply)) then
+		return
+	end
+
+	GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/0", {},function(res)
+		if (res.success) then
+			ply:PrintMessage(HUD_PRINTCENTER,"You're no longer muted in discord!")
+			sendClientIconInfo(ply,false)
+			muted[ply] = false
+		end
+		if (res.error) then
+			log_con_err("Unmuting error: "..res.error)
+		end
+	end)
 end
 
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
