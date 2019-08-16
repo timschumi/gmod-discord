@@ -23,7 +23,6 @@ util.AddNetworkString("drawMute")
 
 HOST = '<fill-in>'
 PORT = 37405
-PREFIX = "[Discord] "
 FILEPATH = "ttt_discord_bot.dat"
 TRIES = 3
 SERVER_ID="<fill-in>"
@@ -40,13 +39,19 @@ function saveIDs()
 	file.Write( FILEPATH, util.TableToJSON(ids))
 end
 
+function log_con(text)
+	print("[Discord] "..text)
+end
+
+function log_con_err(text)
+	log_con("[ERROR] "..text)
+end
 
 function GET(req,params,cb,tries)
 	http.Fetch("http://"..HOST..":"..PORT..req,function(res)
 		cb(util.JSONToTable(res))
 	end,function(err)
-		print(PREFIX.."Request to bot failed. Is the bot running?")
-		print("Err: "..err)
+		log_con_err("Request to bot failed. Error: "..err)
 		if (!tries) then tries = TRIES end
 		if (tries != 0) then GET(req,params,cb, tries-1) end
 	end,{req=req,params=util.TableToJSON(params)})
@@ -73,7 +78,7 @@ function mute(ply)
 						muted[ply] = true
 					end
 					if (res.error) then
-						print(PREFIX.."Error: "..res.error)
+						log_con_err("Mute error: "..res.error)
 					end
 				end
 
@@ -93,7 +98,7 @@ function unmute(ply)
 						muted[ply] = false
 					end
 					if (res.error) then
-						print(PREFIX.."Error: "..res.err)
+						log_con_err("Unmuting error: "..res.error)
 					end
 				end)
 			end
