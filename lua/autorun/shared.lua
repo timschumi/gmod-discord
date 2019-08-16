@@ -43,7 +43,6 @@ end
 
 function GET(req,params,cb,tries)
 	http.Fetch("http://"..HOST..":"..PORT..req,function(res)
-		--print(res)
 		cb(util.JSONToTable(res))
 	end,function(err)
 		print(PREFIX.."Request to bot failed. Is the bot running?")
@@ -59,15 +58,6 @@ function sendClientIconInfo(ply,mute)
 	net.Send(ply)
 end
 
---[[
-function isMuted(ply)
-	for i,v in ipairs(muted) do
-		if ply == v then return
-			true
-		end
-	end
-	return false
-end]]
 function isMuted(ply)
 	return muted[ply]
 end
@@ -77,7 +67,6 @@ function mute(ply)
 		if (!isMuted(ply)) then
 			GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/1",{},function(res)
 				if (res) then
-					--PrintTable(res)
 					if (res.success) then
 						ply:PrintMessage(HUD_PRINTCENTER,"You're muted in discord!")
 						sendClientIconInfo(ply,true)
