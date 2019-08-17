@@ -1,8 +1,6 @@
-HOST = '<fill-in>'
-PORT = 37405
 FILEPATH = "ttt_discord_bot.dat"
-TRIES = 3
-SERVER_ID="<fill-in>"
+BOT_TOKEN = "<fill-in>"
+GUILD_ID = "<fill-in>"
 
 muted = {}
 
@@ -24,14 +22,23 @@ function log_con_err(text)
 	log_con("[ERROR] "..text)
 end
 
-function GET(req,params,cb,tries)
-	http.Fetch("http://"..HOST..":"..PORT..req,function(res)
-		cb(util.JSONToTable(res))
-	end,function(err)
-		log_con_err("Request to bot failed. Error: "..err)
-		if (!tries) then tries = TRIES end
-		if (tries != 0) then GET(req,params,cb, tries-1) end
-	end,{req=req,params=util.TableToJSON(params)})
+function request(method, endpoint, callback, parameters)
+        HTTP({
+                failed = function(err)
+                        log_con_err("HTTP error during request")
+                        log_con_err("method: "..method)
+                        log_con_err("endpoint: '"..endpoint.."'")
+                        log_con_err("err: "..err)
+                end,
+                success = callback,
+                url = "https://discordapp.com/api"..endpoint,
+                method = method,
+		parameters = parameters,
+                headers = {
+                        ["Authorization"] = "Bot "..self.token,
+                        ["User-Agent"] = "DiscordBot (https://github.com/timschumi/SmallLuaDiscord, v0)"
+                }
+        })
 end
 
 function sendClientIconInfo(ply,mute)
@@ -49,23 +56,25 @@ function mute(ply)
 		return
 	end
 
-	if (!isMuted(ply)) then
+	if (isMuted(ply)) then
 		return
 	end
 
-	GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/1",{},function(res)
-		if (res) then
-			if (res.success) then
-				ply:PrintMessage(HUD_PRINTCENTER,"You're muted in discord!")
-				sendClientIconInfo(ply,true)
-				muted[ply] = true
-			end
-			if (res.error) then
-				log_con_err("Mute error: "..res.error)
-			end
+	request("PATCH", "/guilds/"..GUILD_ID.."/members/"..ids[ply:SteamID()], function(code, body, headers)
+		if code == 204 then
+			ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
+			sendClientIconInfo(ply, true)
+			muted[ply] = true
+			return
 		end
 
-	end)
+		log_con_err("Error while muting:")
+		log_con_err("code: "..code)
+		log_con_err("guild: "..GUILD_ID)
+		log_con_err("member: "..ids[ply:SteamID()])
+	end, {
+		mute = "true"
+	})
 end
 
 function unmute(ply)
@@ -84,44 +93,51 @@ function unmute(ply)
 		return
 	end
 
-	GET("/mute/"..SERVER_ID.."/"..ids[ply:SteamID()].."/0", {},function(res)
-		if (res.success) then
-			ply:PrintMessage(HUD_PRINTCENTER,"You're no longer muted in discord!")
-			sendClientIconInfo(ply,false)
+	request("PATCH", "/guilds/"..GUILD_ID.."/members/"..ids[ply:SteamID()], function(code, body, headers)
+		if code == 204 then
+			ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
+			sendClientIconInfo(ply, false)
 			muted[ply] = false
+			return
 		end
-		if (res.error) then
-			log_con_err("Unmuting error: "..res.error)
-		end
-	end)
+
+		log_con_err("Error while unmuting:")
+		log_con_err("code: "..code)
+		log_con_err("guild: "..GUILD_ID)
+		log_con_err("member: "..ids[ply:SteamID()])
+	end, {
+		mute = "false"
+	})
 end
 
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
-  if (string.sub(msg,1,9) != '!discord ') then return end
-  tag = string.sub(msg,10)
-  tag_utf8 = ""
-  
-  for p, c in utf8.codes(tag) do
-	tag_utf8 = string.Trim(tag_utf8.." "..c)
-  end
-	GET("/connect/"..SERVER_ID.."/"..tag,{tag=tag_utf8},function(res)
-                if (res.error ~= nil) then
-                    ply:PrintMessage(HUD_PRINTTALK,"Error: "..res.error)
-                end
-		if (res.tag && res.id) then
-			ply:PrintMessage(HUD_PRINTTALK,"Discord tag '"..res.tag.."' successfully boundet to SteamID '"..ply:SteamID().."'") --lie! actually the discord id is bound! ;)
-			ids[ply:SteamID()] = res.id
+	if (string.sub(msg,1,9) != '!discord ') then return end
+	id = string.sub(msg,10)
+
+	request("GET", "/guilds/"..GUILD_ID.."/members/"..id, function(code, body, headers)
+		body_json = util.JSONToTable(body)
+
+		if (body_json.user.username) then
+			ply:PrintMessage(HUD_PRINTTALK, "SteamID '"..ply:SteamID().."' successfully bound to Discord user '"..body_json.user.username.."'")
+			ids[ply:SteamID()] = id
 			saveIDs()
+			return
 		end
+
+		log_con_err("Error while finding user:")
+		log_con_err("code: "..code)
+		log_con_err("guild: "..GUILD_ID)
+		log_con_err("member: "..id)
 	end)
+
 	return ""
 end)
 
 hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(ply)
 	if (ids[ply:SteamID()]) then
-		ply:PrintMessage(HUD_PRINTTALK,"You are connected with discord.")
+		ply:PrintMessage(HUD_PRINTTALK,"You are connected with Discord.")
 	else
-		ply:PrintMessage(HUD_PRINTTALK,"You are not connected with discord. Write '!discord DISCORDTAG' in the chat. E.g. '!discord marcel.js#4402'")
+		ply:PrintMessage(HUD_PRINTTALK,"You are not connected with Discord. Write '!discord DISCORD-ID' in the chat. E.g. '!discord 296323983819669514'")
 	end
 end)
 
