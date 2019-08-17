@@ -131,23 +131,40 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	id = string.sub(msg,10)
 
 	request("GET", "/guilds/"..GUILD_ID.."/members/"..id, function(code, body, headers)
-		body_json = util.JSONToTable(body)
-
-		if (body_json.user.username) then
-			ply:PrintMessage(HUD_PRINTTALK, "SteamID '"..ply:SteamID().."' successfully bound to Discord user '"..body_json.user.username.."'")
-			ids[ply:SteamID()] = id
-			saveIDs()
+		if code == 404 then
+			ply:PrintMessage(HUD_PRINTTALK, "Discord user with ID '"..id.."' does not exist on Discord guild with ID '"..GUILD_ID.."' (Or I don't have access to the user list on that server)")
 			return
 		end
 
-		log_con_err("Error while finding user:")
-		log_con_err("code: "..code)
-		log_con_err("guild: "..GUILD_ID)
-		log_con_err("member: "..id)
-		log_con_err("--body")
-		log_con_err(body)
-		log_con_err("--body")
-		dc_disable()
+		if code != 200 then
+			log_con_err("Non-200 (and non-404) status code while finding users:")
+			log_con_err("code: "..code)
+			log_con_err("guild: "..GUILD_ID)
+			log_con_err("member: "..id)
+			log_con_err("--body")
+			log_con_err(body)
+			log_con_err("--body")
+			dc_disable()
+			return
+		end
+
+		body_json = util.JSONToTable(body)
+
+		if not body_json or not body_json.user or not body_json.user.username then
+			log_con_err("Couldn't find username field (or couldn't read JSON) while finding users:")
+			log_con_err("code: "..code)
+			log_con_err("guild: "..GUILD_ID)
+			log_con_err("member: "..id)
+			log_con_err("--body")
+			log_con_err(body)
+			log_con_err("--body")
+			dc_disable()
+			return
+		end
+
+		ply:PrintMessage(HUD_PRINTTALK, "SteamID '"..ply:SteamID().."' successfully bound to Discord user '"..body_json.user.username.."'")
+		ids[ply:SteamID()] = id
+		saveIDs()
 	end)
 
 	return ""
