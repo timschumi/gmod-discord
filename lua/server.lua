@@ -1,3 +1,5 @@
+util.AddNetworkString("drawMute")
+
 FILEPATH = "ttt_discord_bot.dat"
 BOT_TOKEN = "<fill-in>"
 GUILD_ID = "<fill-in>"
