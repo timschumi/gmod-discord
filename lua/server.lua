@@ -74,6 +74,9 @@ function mute(ply)
 		log_con_err("code: "..code)
 		log_con_err("guild: "..GUILD_ID)
 		log_con_err("member: "..ids[ply:SteamID()])
+		log_con_err("body start--")
+		log_con_err(body)
+		log_con_err("body end--")
 	end, {
 		mute = "true"
 	})
@@ -107,6 +110,9 @@ function unmute(ply)
 		log_con_err("code: "..code)
 		log_con_err("guild: "..GUILD_ID)
 		log_con_err("member: "..ids[ply:SteamID()])
+		log_con_err("--body")
+		log_con_err(body)
+		log_con_err("--body")
 	end, {
 		mute = "false"
 	})
@@ -130,6 +136,9 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 		log_con_err("code: "..code)
 		log_con_err("guild: "..GUILD_ID)
 		log_con_err("member: "..id)
+		log_con_err("--body")
+		log_con_err(body)
+		log_con_err("--body")
 	end)
 
 	return ""
