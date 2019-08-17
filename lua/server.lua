@@ -1,26 +1,3 @@
-AddCSLuaFile()
-resource.AddFile("materials/mute-icon.png")
-if (CLIENT) then
-
-	local drawMute = false
-	local muteIcon = Material("materials/mute-icon.png")
-
-	net.Receive("drawMute",function()
-		drawMute = net.ReadBool()
-	end)
-
-	hook.Add( "HUDPaint", "ttt_discord_bot_HUDPaint", function()
-		if (!drawMute) then return end
-		surface.SetDrawColor(255, 255, 255, 255)
-		surface.SetMaterial(muteIcon)
-		surface.DrawTexturedRect(0, 0, 128, 128)
-	end )
-
-
-	return
-end
-util.AddNetworkString("drawMute")
-
 HOST = '<fill-in>'
 PORT = 37405
 FILEPATH = "ttt_discord_bot.dat"
