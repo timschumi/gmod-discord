@@ -1,6 +1,6 @@
-addCSLuaFile()
-addCSLuaFile("shared.lua")
-addCSLuaFile("client.lua")
+AddCSLuaFile()
+AddCSLuaFile("shared.lua")
+AddCSLuaFile("client.lua")
 
 include("shared.lua")
 
