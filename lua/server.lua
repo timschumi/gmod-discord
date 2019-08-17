@@ -30,7 +30,7 @@ function dc_disable()
 	log_con("Disabling requests to not get on the Discord developers' nerves!")
 end
 
-function request(method, endpoint, callback, parameters)
+function request(method, endpoint, callback, body, contenttype)
 	if DC_DISABLED then
 		log_con_err("HTTP requests are disabled!")
 		return
@@ -45,7 +45,8 @@ function request(method, endpoint, callback, parameters)
                 success = callback,
                 url = "https://discordapp.com/api"..endpoint,
                 method = method,
-		parameters = parameters,
+		body = body,
+		["type"] = contenttype,
                 headers = {
                         ["Authorization"] = "Bot "..BOT_TOKEN
                 }
@@ -87,9 +88,7 @@ function mute(ply)
 		log_con_err(body)
 		log_con_err("body end--")
 		dc_disable()
-	end, {
-		mute = "true"
-	})
+	end, '{"mute": true}', "application/json")
 end
 
 function unmute(ply)
@@ -124,9 +123,7 @@ function unmute(ply)
 		log_con_err(body)
 		log_con_err("--body")
 		dc_disable()
-	end, {
-		mute = "false"
-	})
+	end, '{"mute": false}', "application/json")
 end
 
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
