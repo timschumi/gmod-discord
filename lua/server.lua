@@ -3,6 +3,7 @@ util.AddNetworkString("drawMute")
 FILEPATH = "ttt_discord_bot.dat"
 BOT_TOKEN = "<fill-in>"
 GUILD_ID = "<fill-in>"
+DC_DISABLED = false
 
 muted = {}
 
@@ -24,7 +25,16 @@ function log_con_err(text)
 	log_con("[ERROR] "..text)
 end
 
+function dc_disable()
+	DC_DISABLED = true
+	log_con("Disabling requests to not get on the Discord developers' nerves!")
+end
+
 function request(method, endpoint, callback, parameters)
+	if DC_DISABLED then
+		log_con_err("HTTP requests are disabled!")
+		return
+	end
         HTTP({
                 failed = function(err)
                         log_con_err("HTTP error during request")
@@ -77,6 +87,7 @@ function mute(ply)
 		log_con_err("body start--")
 		log_con_err(body)
 		log_con_err("body end--")
+		dc_disable()
 	end, {
 		mute = "true"
 	})
@@ -113,6 +124,7 @@ function unmute(ply)
 		log_con_err("--body")
 		log_con_err(body)
 		log_con_err("--body")
+		dc_disable()
 	end, {
 		mute = "false"
 	})
@@ -139,6 +151,7 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 		log_con_err("--body")
 		log_con_err(body)
 		log_con_err("--body")
+		dc_disable()
 	end)
 
 	return ""
