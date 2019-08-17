@@ -47,8 +47,7 @@ function request(method, endpoint, callback, parameters)
                 method = method,
 		parameters = parameters,
                 headers = {
-                        ["Authorization"] = "Bot "..self.token,
-                        ["User-Agent"] = "DiscordBot (https://github.com/timschumi/SmallLuaDiscord, v0)"
+                        ["Authorization"] = "Bot "..self.token
                 }
         })
 end
