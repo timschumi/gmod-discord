@@ -47,7 +47,7 @@ function request(method, endpoint, callback, parameters)
                 method = method,
 		parameters = parameters,
                 headers = {
-                        ["Authorization"] = "Bot "..self.token
+                        ["Authorization"] = "Bot "..BOT_TOKEN
                 }
         })
 end
