@@ -5,7 +5,9 @@ It automatically mutes players when they die in-game and unmutes them when reviv
 
 The plugin doesn't work fully standalone right now, since direct HTTP accesses to the Discord API from
 the GMod User-Agent are disallowed. You will either need an utility that proxies requests with a
-custom User-Agent or through a custom HTTP library that allows for changing the User-Agent.
+custom User-Agent or through a custom HTTP library that allows for changing the User-Agent
+(for example the [CHTTP project](https://github.com/timschumi/gmod-chttp), which will be used automatically
+if it's installed).
 
 ## Caveats
 
