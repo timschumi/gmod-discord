@@ -52,7 +52,8 @@ function request(method, endpoint, callback, body, contenttype)
 		body = body,
 		["type"] = contenttype,
                 headers = {
-                        ["Authorization"] = "Bot "..BOT_TOKEN
+                        ["Authorization"] = "Bot "..BOT_TOKEN,
+			["User-Agent"] = "DiscordBot (https://github.com/timschumi/gmod-discord, v1.0)"
                 }
         })
 end
