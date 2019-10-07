@@ -39,23 +39,23 @@ function request(method, endpoint, callback, body, contenttype)
 		log_con_err("HTTP requests are disabled!")
 		return
 	end
-        HTTP({
-                failed = function(err)
-                        log_con_err("HTTP error during request")
-                        log_con_err("method: "..method)
-                        log_con_err("endpoint: '"..endpoint.."'")
-                        log_con_err("err: "..err)
-                end,
-                success = callback,
-                url = "https://discordapp.com/api"..endpoint,
-                method = method,
+	HTTP({
+		failed = function(err)
+			log_con_err("HTTP error during request")
+			log_con_err("method: "..method)
+			log_con_err("endpoint: '"..endpoint.."'")
+			log_con_err("err: "..err)
+		end,
+		success = callback,
+		url = "https://discordapp.com/api"..endpoint,
+		method = method,
 		body = body,
 		["type"] = contenttype,
-                headers = {
-                        ["Authorization"] = "Bot "..BOT_TOKEN,
+		headers = {
+			["Authorization"] = "Bot "..BOT_TOKEN,
 			["User-Agent"] = "DiscordBot (https://github.com/timschumi/gmod-discord, v1.0)"
-                }
-        })
+		}
+	})
 end
 
 function sendClientIconInfo(ply,mute)
