@@ -13,6 +13,10 @@ if (ids_raw) then
 	ids = util.JSONToTable(ids_raw)
 end
 
+if pcall(require, "chttp") then
+	HTTP = CHTTP
+end
+
 function saveIDs()
 	file.Write( FILEPATH, util.TableToJSON(ids))
 end
