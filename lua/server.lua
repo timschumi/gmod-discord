@@ -175,7 +175,7 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 			return
 		end
 
-		ply:PrintMessage(HUD_PRINTTALK, "SteamID '"..ply:SteamID().."' successfully bound to Discord user '"..body_json.user.username.."'")
+		ply:PrintMessage(HUD_PRINTTALK, "Discord user '"..body_json.user.username.."' successfully bound to SteamID '"..ply:SteamID().."'")
 		ids[ply:SteamID()] = id
 		saveIDs()
 	end)
