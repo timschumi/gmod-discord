@@ -23,11 +23,11 @@ if it's installed).
 
 1. Copy the files from this repository into a new Folder in `garrysmod/addons/`.
 
-2. Create an Application with an attached Bot user in the [Discord Developer Portal](https://discordapp.com/developers/applications) and fill in the Client Secret into the `BOT_TOKEN` variable in `lua/server.lua`.
+2. Create an Application with an attached Bot user in the [Discord Developer Portal](https://discordapp.com/developers/applications) and fill in the Client Secret into the `discord_token` variable in the console.
 
 3. Invite the Bot to your server and allow it to mute players (either globally or per-channel).
 
-4. Copy the [Guild ID](https://support.discordapp.com/hc/en-us/articles/206346498) and fill it into the `GUILD_ID` variable in `lua/server.lua`.
+4. Copy the [Guild ID](https://support.discordapp.com/hc/en-us/articles/206346498) and fill it into the `discord_guild` variable in the console.
 
 ## Setup (client-side)
 

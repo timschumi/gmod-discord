@@ -1,9 +1,9 @@
 util.AddNetworkString("drawMute")
 
 FILEPATH = "ttt_discord_bot.dat"
-BOT_TOKEN = "<fill-in>"
-GUILD_ID = "<fill-in>"
-DC_DISABLED = false
+cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
+cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
+cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
 
 muted = {}
 
@@ -30,12 +30,20 @@ function log_con_err(text)
 end
 
 function dc_disable()
-	DC_DISABLED = true
+	cvar_enabled:SetBool(false)
 	log_con("Disabling requests to not get on the Discord developers' nerves!")
 end
 
 function request(method, endpoint, callback, body, contenttype)
-	if DC_DISABLED then
+	if cvar_guild:GetString() == "" then
+		log_con_err("The guild has not been set!")
+		return
+	end
+	if cvar_token:GetString() == "" then
+		log_con_err("The bot token has not been set!")
+		return
+	end
+	if !cvar_enabled:GetBool() then
 		log_con_err("HTTP requests are disabled!")
 		return
 	end
@@ -52,7 +60,7 @@ function request(method, endpoint, callback, body, contenttype)
 		body = body,
 		["type"] = contenttype,
 		headers = {
-			["Authorization"] = "Bot "..BOT_TOKEN,
+			["Authorization"] = "Bot "..cvar_token:GetString(),
 			["User-Agent"] = "DiscordBot (https://github.com/timschumi/gmod-discord, v1.0)"
 		}
 	})
@@ -77,7 +85,7 @@ function mute(ply)
 		return
 	end
 
-	request("PATCH", "/guilds/"..GUILD_ID.."/members/"..ids[ply:SteamID()], function(code, body, headers)
+	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids[ply:SteamID()], function(code, body, headers)
 		if code == 204 then
 			ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
 			sendClientIconInfo(ply, true)
@@ -87,7 +95,7 @@ function mute(ply)
 
 		log_con_err("Error while muting:")
 		log_con_err("code: "..code)
-		log_con_err("guild: "..GUILD_ID)
+		log_con_err("guild: "..cvar_guild:GetString())
 		log_con_err("member: "..ids[ply:SteamID()])
 		log_con_err("body start--")
 		log_con_err(body)
@@ -112,7 +120,7 @@ function unmute(ply)
 		return
 	end
 
-	request("PATCH", "/guilds/"..GUILD_ID.."/members/"..ids[ply:SteamID()], function(code, body, headers)
+	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids[ply:SteamID()], function(code, body, headers)
 		if code == 204 then
 			ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
 			sendClientIconInfo(ply, false)
@@ -122,7 +130,7 @@ function unmute(ply)
 
 		log_con_err("Error while unmuting:")
 		log_con_err("code: "..code)
-		log_con_err("guild: "..GUILD_ID)
+		log_con_err("guild: "..cvar_guild:GetString())
 		log_con_err("member: "..ids[ply:SteamID()])
 		log_con_err("--body")
 		log_con_err(body)
@@ -135,16 +143,16 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	if (string.sub(msg,1,9) != '!discord ') then return end
 	id = string.sub(msg,10)
 
-	request("GET", "/guilds/"..GUILD_ID.."/members/"..id, function(code, body, headers)
+	request("GET", "/guilds/"..cvar_guild:GetString().."/members/"..id, function(code, body, headers)
 		if code == 404 then
-			ply:PrintMessage(HUD_PRINTTALK, "Discord user with ID '"..id.."' does not exist on Discord guild with ID '"..GUILD_ID.."' (Or I don't have access to the user list on that server)")
+			ply:PrintMessage(HUD_PRINTTALK, "Discord user with ID '"..id.."' does not exist on Discord guild with ID '"..cvar_guild:GetString().."' (Or I don't have access to the user list on that server)")
 			return
 		end
 
 		if code != 200 then
 			log_con_err("Non-200 (and non-404) status code while finding users:")
 			log_con_err("code: "..code)
-			log_con_err("guild: "..GUILD_ID)
+			log_con_err("guild: "..cvar_guild:GetString())
 			log_con_err("member: "..id)
 			log_con_err("--body")
 			log_con_err(body)
@@ -158,7 +166,7 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 		if not body_json or not body_json.user or not body_json.user.username then
 			log_con_err("Couldn't find username field (or couldn't read JSON) while finding users:")
 			log_con_err("code: "..code)
-			log_con_err("guild: "..GUILD_ID)
+			log_con_err("guild: "..cvar_guild:GetString())
 			log_con_err("member: "..id)
 			log_con_err("--body")
 			log_con_err(body)
