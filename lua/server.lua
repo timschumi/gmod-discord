@@ -66,6 +66,66 @@ function request(method, endpoint, callback, body, contenttype)
 	})
 end
 
+-- success/fail are callback functions that handle a search result.
+-- success gets two arguments, the user ID as the first and `<username>#<discriminator>` as the second.
+-- fail gets a single argument, the reason as a text.
+function resolveUser(search, success, fail, after)
+	endpoint = "/guilds/"..cvar_guild:GetString().."/members?limit=20"
+	if after then
+		endpoint = endpoint.."&after="..after
+	end
+
+	request("GET", endpoint, function(code, body, headers)
+		if code == 403 then
+			fail("I do not have access to the user list of the Discord server!")
+			return
+		end
+
+		if code != 200 then
+			fail("Got an HTTP error code that is neither 200, nor 403: "..code)
+			return
+		end
+
+		response = util.JSONToTable(body)
+
+		for _, entry in pairs(response) do
+			last = entry.user.id
+			discriminator = entry.user.username.."#"..entry.user.discriminator
+
+			-- Can we resolve by snowflake?
+			if entry.user.id == search then
+				success(entry.user.id, discriminator)
+				return
+			end
+
+			-- Can we resolve by full username?
+			if discriminator == search then
+				success(entry.user.id, discriminator)
+				return
+			end
+
+			-- Can we resolve by small username?
+			if entry.user.username == search then
+				success(entry.user.id, discriminator)
+				return
+			end
+
+			-- Can we resolve by nickname?
+			if entry.nick ~= nil and entry.nick == search then
+				success(entry.user.id, discriminator)
+				return
+			end
+		end
+
+		if table.getn(response) == 20 then
+			resolveUser(search, success, fail, last)
+			return
+		end
+
+		fail("Could not find user in user list.")
+	end)
+end
+
 function sendClientIconInfo(ply,mute)
 	net.Start("drawMute")
 	net.WriteBool(mute)
@@ -143,41 +203,12 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	if (string.sub(msg,1,9) != '!discord ') then return end
 	id = string.sub(msg,10)
 
-	request("GET", "/guilds/"..cvar_guild:GetString().."/members/"..id, function(code, body, headers)
-		if code == 404 then
-			ply:PrintMessage(HUD_PRINTTALK, "Discord user with ID '"..id.."' does not exist on Discord guild with ID '"..cvar_guild:GetString().."' (Or I don't have access to the user list on that server)")
-			return
-		end
-
-		if code != 200 then
-			log_con_err("Non-200 (and non-404) status code while finding users:")
-			log_con_err("code: "..code)
-			log_con_err("guild: "..cvar_guild:GetString())
-			log_con_err("member: "..id)
-			log_con_err("--body")
-			log_con_err(body)
-			log_con_err("--body")
-			dc_disable()
-			return
-		end
-
-		body_json = util.JSONToTable(body)
-
-		if not body_json or not body_json.user or not body_json.user.username then
-			log_con_err("Couldn't find username field (or couldn't read JSON) while finding users:")
-			log_con_err("code: "..code)
-			log_con_err("guild: "..cvar_guild:GetString())
-			log_con_err("member: "..id)
-			log_con_err("--body")
-			log_con_err(body)
-			log_con_err("--body")
-			dc_disable()
-			return
-		end
-
-		ply:PrintMessage(HUD_PRINTTALK, "Discord user '"..body_json.user.username.."' successfully bound to SteamID '"..ply:SteamID().."'")
+	resolveUser(id, function(id, name)
+		ply:PrintMessage(HUD_PRINTTALK, "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
 		ids[ply:SteamID()] = id
 		saveIDs()
+	end, function(reason)
+		ply:PrintMessage(HUD_PRINTTALK, reason)
 	end)
 
 	return ""
