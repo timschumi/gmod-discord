@@ -93,26 +93,10 @@ function resolveUser(search, success, fail, after)
 			last = entry.user.id
 			discriminator = entry.user.username.."#"..entry.user.discriminator
 
-			-- Can we resolve by snowflake?
-			if entry.user.id == search then
-				success(entry.user.id, discriminator)
-				return
-			end
-
-			-- Can we resolve by full username?
-			if discriminator == search then
-				success(entry.user.id, discriminator)
-				return
-			end
-
-			-- Can we resolve by small username?
-			if entry.user.username == search then
-				success(entry.user.id, discriminator)
-				return
-			end
-
-			-- Can we resolve by nickname?
-			if entry.nick ~= nil and entry.nick == search then
+			if search == entry.user.id or -- Snowflake-ID
+			   search == discriminator or -- Full username
+			   search == entry.user.username or -- "small" username
+			   search == entry.nick then -- Nickname
 				success(entry.user.id, discriminator)
 				return
 			end
