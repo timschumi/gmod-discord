@@ -4,6 +4,7 @@ FILEPATH = "ttt_discord_bot.dat"
 cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
 cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
 cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
+cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
 
 muted = {}
 
@@ -55,7 +56,7 @@ function request(method, endpoint, callback, body, contenttype)
 			log_con_err("err: "..err)
 		end,
 		success = callback,
-		url = "https://discordapp.com/api"..endpoint,
+		url = cvar_api:GetString()..endpoint,
 		method = method,
 		body = body,
 		["type"] = contenttype,
