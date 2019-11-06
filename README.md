@@ -16,7 +16,7 @@ Please note that the server that you put there will receive your whole request, 
 ## Caveats
 
 * Since the Discord developers aren't particularly fond of GMod interfacing with the Discord API, I built in a failsafe to not get on their nerves. It will shut
-  down all HTTP requests if an unexpected error is encountered.
+  down all HTTP requests if an unexpected error is encountered. Exceptions for non-fatal issues will be added over time.
 
 * This plugin does not have a channel filter. It will mute/unmute people no matter which channel they are in (as long as they are on the Garry's Mod server).
   This could be restricted by allowing the bot permissions by-channel, but a "permission denied" error can cause the failsafe to activate.

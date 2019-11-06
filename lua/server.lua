@@ -180,14 +180,18 @@ function mute(val, ply)
 			return
 		end
 
-		log_con_err("Error while muting:")
-		log_con_err("state: "..tostring(val))
-		log_con_err("code: "..code)
-		log_con_err("guild: "..cvar_guild:GetString())
-		log_con_err("member: "..ids[ply:SteamID()])
-		log_con_err("body start--")
-		log_con_err(body)
-		log_con_err("body end--")
+		response = util.JSONToTable(body)
+
+		error = "Error while muting: "..code.."/"..response.code.." - "..response.message
+
+		ply:PrintMessage(HUD_PRINTTALK, error)
+		log_con_err(error.." ("..ply:GetName()..")")
+
+		-- Don't activate the failsafe on the following errors
+		if code == 400 and response.code == 40032 then -- Target user is not connected to voice.
+			return
+		end
+
 		dc_disable()
 	end, '{"mute": '..tostring(val)..'}', "application/json")
 end
