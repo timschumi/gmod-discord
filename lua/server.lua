@@ -137,24 +137,51 @@ function isMuted(ply)
 	return muted[ply]
 end
 
-function mute(ply)
+function mute(val, ply)
+	-- Sanitize val
+	if not val then
+		val = false
+	else
+		val = true
+	end
+
+	-- Unmute all if we're unmuting and no player is given
+	if (not val and not ply) then
+		for ply,state in pairs(muted) do
+			if state then mute(false, ply) end
+		end
+		return
+	end
+
+	-- Do we have a saved Discord ID?
 	if (not ids[ply:SteamID()]) then
 		return
 	end
 
-	if (isMuted(ply)) then
+	-- Is the player already muted?
+	if (val and isMuted(ply)) then
+		return
+	end
+
+	-- Is the player already unmuted?
+	if (not val and not isMuted(ply)) then
 		return
 	end
 
 	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids[ply:SteamID()], function(code, body, headers)
 		if code == 204 then
-			ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
-			sendClientIconInfo(ply, true)
-			muted[ply] = true
+			if val then
+				ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
+			else
+				ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
+			end
+			sendClientIconInfo(ply, val)
+			muted[ply] = val
 			return
 		end
 
 		log_con_err("Error while muting:")
+		log_con_err("state: "..tostring(val))
 		log_con_err("code: "..code)
 		log_con_err("guild: "..cvar_guild:GetString())
 		log_con_err("member: "..ids[ply:SteamID()])
@@ -162,42 +189,7 @@ function mute(ply)
 		log_con_err(body)
 		log_con_err("body end--")
 		dc_disable()
-	end, '{"mute": true}', "application/json")
-end
-
-function unmute(ply)
-	if (not ply) then
-		for ply,val in pairs(muted) do
-			if val then unmute(ply) end
-		end
-		return
-	end
-
-	if (not ids[ply:SteamID()]) then
-		return
-	end
-
-	if (not isMuted(ply)) then
-		return
-	end
-
-	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids[ply:SteamID()], function(code, body, headers)
-		if code == 204 then
-			ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
-			sendClientIconInfo(ply, false)
-			muted[ply] = false
-			return
-		end
-
-		log_con_err("Error while unmuting:")
-		log_con_err("code: "..code)
-		log_con_err("guild: "..cvar_guild:GetString())
-		log_con_err("member: "..ids[ply:SteamID()])
-		log_con_err("--body")
-		log_con_err(body)
-		log_con_err("--body")
-		dc_disable()
-	end, '{"mute": false}', "application/json")
+	end, '{"mute": '..tostring(val)..'}', "application/json")
 end
 
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
@@ -224,22 +216,22 @@ hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(pl
 end)
 
 hook.Add("PlayerSpawn", "ttt_discord_bot_PlayerSpawn", function(ply)
-  unmute(ply)
+  mute(false, ply)
 end)
 hook.Add("PlayerDisconnected", "ttt_discord_bot_PlayerDisconnected", function(ply)
-  unmute(ply)
+  mute(false, ply)
 end)
 hook.Add("ShutDown","ttt_discord_bot_ShutDown", function()
-  unmute()
+  mute(false)
 end)
 hook.Add("TTTEndRound", "ttt_discord_bot_TTTEndRound", function()
-	timer.Simple(0.1,function() unmute() end)
+	timer.Simple(0.1,function() mute(false) end)
 end)
 hook.Add("TTTBeginRound", "ttt_discord_bot_TTTBeginRound", function()--in case of round-restart via command
-  unmute()
+  mute(false)
 end)
 hook.Add("PostPlayerDeath", "ttt_discord_bot_PostPlayerDeath", function(ply)
 	if (GetRoundState() == 3) then
-		mute(ply)
+		mute(true, ply)
 	end
 end)
