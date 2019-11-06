@@ -118,16 +118,12 @@ function sendClientIconInfo(ply,mute)
 end
 
 function isMuted(ply)
-	return muted[ply]
+	return muted[ply] == true
 end
 
 function mute(val, ply)
 	-- Sanitize val
-	if not val then
-		val = false
-	else
-		val = true
-	end
+	val = (val == true)
 
 	-- Unmute all if we're unmuting and no player is given
 	if (not val and not ply) then
@@ -142,13 +138,8 @@ function mute(val, ply)
 		return
 	end
 
-	-- Is the player already muted?
-	if (val and isMuted(ply)) then
-		return
-	end
-
-	-- Is the player already unmuted?
-	if (not val and not isMuted(ply)) then
+	-- Is the player already muted/unmuted?
+	if (val == isMuted(ply)) then
 		return
 	end
 
