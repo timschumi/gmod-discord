@@ -31,10 +31,19 @@ if it's installed).
 
 ## Setup (client-side)
 
-The only thing that the player has to do is to bind his Steam ID to his Discord User-ID.
-This is done by entering `!discord <USER-ID>` into the Garry's Mod chat.
-The User-ID is obtained by enabling Developer Mode in Discord (Settings > Appearance > Developer Mode),
-right clicking yourself in the user list and pressing "Copy ID".
+The only thing that the player has to do is to bind his Discord user to his Steam ID.
+This is done by entering `!discord <ident>` into the Garry's Mod chat.
+
+`ident` can be one of the following:
+
+- Snowflake-ID (obtained by right-clicking yourself in the user list and pressing "Copy ID" while in Developer Mode)
+- Full username with discriminator (e.g. `timschumi#0319`)
+- "Small" username (e.g. `timschumi`)
+- Guild-specific nickname
+
+The plugin will choose the first match that it encounters. If the correct one isn't chosen while using
+a nickname or "small" username, please use a more uniquely identifying option, like the full username
+with discriminator or the Snowflake-ID.
 
 ## Credits
 **marceltransier** for the [original plugin/bot combo](https://github.com/marceltransier/ttt_discord_bot) that this is based on.
