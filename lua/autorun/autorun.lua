@@ -1,8 +1,7 @@
 AddCSLuaFile()
-AddCSLuaFile("shared.lua")
 AddCSLuaFile("client.lua")
 
-include("shared.lua")
+resource.AddFile("materials/mute-icon.png")
 
 if CLIENT then
 	include("client.lua")
