@@ -1,13 +1,15 @@
 AddCSLuaFile()
-AddCSLuaFile("shared.lua")
-AddCSLuaFile("client.lua")
+AddCSLuaFile("printchat_cl.lua")
+AddCSLuaFile("discord_cl.lua")
 
-include("shared.lua")
+resource.AddFile("materials/mute-icon.png")
 
 if CLIENT then
-	include("client.lua")
+	include("printchat_cl.lua")
+	include("discord_cl.lua")
 end
 
 if SERVER then
-	include("server.lua")
+	include("printchat_sv.lua")
+	include("discord_sv.lua")
 end

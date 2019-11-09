@@ -23,7 +23,7 @@ Please note that the server that you put there will receive your whole request, 
 
 * The bot does not have player verification. A player can put in the Tag of any User on the server when connecting his Steam account.
 
-## Setup (server-side)
+## Setup
 
 1. Copy the files from this repository into a new Folder in `garrysmod/addons/`.
 
@@ -32,22 +32,6 @@ Please note that the server that you put there will receive your whole request, 
 3. Invite the Bot to your server and allow it to mute players (either globally or per-channel).
 
 4. Copy the [Guild ID](https://support.discordapp.com/hc/en-us/articles/206346498) and fill it into the `discord_guild` variable in the console.
-
-## Setup (client-side)
-
-The only thing that the player has to do is to bind his Discord user to his Steam ID.
-This is done by entering `!discord <ident>` into the Garry's Mod chat.
-
-`ident` can be one of the following:
-
-- Snowflake-ID (obtained by right-clicking yourself in the user list and pressing "Copy ID" while in Developer Mode)
-- Full username with discriminator (e.g. `timschumi#0319`)
-- "Small" username (e.g. `timschumi`)
-- Guild-specific nickname
-
-The plugin will choose the first match that it encounters. If the correct one isn't chosen while using
-a nickname or "small" username, please use a more uniquely identifying option, like the full username
-with discriminator or the Snowflake-ID.
 
 ## Credits
 **marceltransier** for the [original plugin/bot combo](https://github.com/marceltransier/ttt_discord_bot) that this is based on.

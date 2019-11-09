@@ -159,7 +159,7 @@ function mute(val, ply)
 
 		error = "Error while muting: "..code.."/"..response.code.." - "..response.message
 
-		ply:PrintMessage(HUD_PRINTTALK, error)
+		printChat(ply, Color(255, 70, 70), error)
 		log_con_err(error.." ("..ply:GetName()..")")
 
 		-- Don't activate the failsafe on the following errors
@@ -171,16 +171,31 @@ function mute(val, ply)
 	end, '{"mute": '..tostring(val)..'}', "application/json")
 end
 
+function sendHelp(ply)
+	printChat(ply, "Say '!discord <ident>' in the chat to connect to Discord.")
+	printChat(ply, "'ident' can be one of the following:")
+	printChat(ply, "  - Snowflake-ID (right-click in user list > 'Copy ID' while in developer mode)")
+	printChat(ply, "  - Full username with discriminator (e.g. 'timschumi#0319')")
+	printChat(ply, "  - \"Small\" username (e.g. 'timschumi')")
+	printChat(ply, "  - Guild-specific nickname")
+end
+
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
-	if (string.sub(msg,1,9) != '!discord ') then return end
+	if (string.sub(msg,1,8) != '!discord') then return end
 	id = string.sub(msg,10)
 
+	if id == "" then
+		sendHelp(ply)
+		return ""
+	end
+
 	resolveUser(id, function(id, name)
-		ply:PrintMessage(HUD_PRINTTALK, "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
+		printChat(ply, Color(70, 255, 70), "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
+		printChat(ply, Color(240, 240, 240), "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
 		ids[ply:SteamID()] = id
 		saveIDs()
 	end, function(reason)
-		ply:PrintMessage(HUD_PRINTTALK, reason)
+		printChat(ply, Color(255, 70, 70), reason)
 	end)
 
 	return ""
@@ -188,9 +203,10 @@ end)
 
 hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(ply)
 	if (ids[ply:SteamID()]) then
-		ply:PrintMessage(HUD_PRINTTALK,"You are connected with Discord.")
+		printChat(ply, "You are connected to Discord.")
 	else
-		ply:PrintMessage(HUD_PRINTTALK,"You are not connected with Discord. Write '!discord DISCORD-ID' in the chat. E.g. '!discord 296323983819669514'")
+		printChat(ply, "You are not connected to Discord.")
+		sendHelp(ply)
 	end
 end)
 
