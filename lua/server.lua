@@ -159,7 +159,7 @@ function mute(val, ply)
 
 		error = "Error while muting: "..code.."/"..response.code.." - "..response.message
 
-		ply:PrintMessage(HUD_PRINTTALK, error)
+		printChat(ply, error)
 		log_con_err(error.." ("..ply:GetName()..")")
 
 		-- Don't activate the failsafe on the following errors
@@ -172,12 +172,12 @@ function mute(val, ply)
 end
 
 function sendHelp(ply)
-	ply:PrintMessage(HUD_PRINTTALK, "Say '!discord <ident>' in the chat to connect to Discord.")
-	ply:PrintMessage(HUD_PRINTTALK, "'ident' can be one of the following:")
-	ply:PrintMessage(HUD_PRINTTALK, "  - Snowflake-ID (right-click in user list > 'Copy ID' while in developer mode)")
-	ply:PrintMessage(HUD_PRINTTALK, "  - Full username with discriminator (e.g. 'timschumi#0319')")
-	ply:PrintMessage(HUD_PRINTTALK, "  - \"Small\" username (e.g. 'timschumi')")
-	ply:PrintMessage(HUD_PRINTTALK, "  - Guild-specific nickname")
+	printChat(ply, "Say '!discord <ident>' in the chat to connect to Discord.")
+	printChat(ply, "'ident' can be one of the following:")
+	printChat(ply, "  - Snowflake-ID (right-click in user list > 'Copy ID' while in developer mode)")
+	printChat(ply, "  - Full username with discriminator (e.g. 'timschumi#0319')")
+	printChat(ply, "  - \"Small\" username (e.g. 'timschumi')")
+	printChat(ply, "  - Guild-specific nickname")
 end
 
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
@@ -190,12 +190,12 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	end
 
 	resolveUser(id, function(id, name)
-		ply:PrintMessage(HUD_PRINTTALK, "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
-		ply:PrintMessage(HUD_PRINTTALK, "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
+		printChat(ply, "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
+		printChat(ply, "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
 		ids[ply:SteamID()] = id
 		saveIDs()
 	end, function(reason)
-		ply:PrintMessage(HUD_PRINTTALK, reason)
+		printChat(ply, reason)
 	end)
 
 	return ""
@@ -203,9 +203,9 @@ end)
 
 hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(ply)
 	if (ids[ply:SteamID()]) then
-		ply:PrintMessage(HUD_PRINTTALK,"You are connected to Discord.")
+		printChat(ply, "You are connected to Discord.")
 	else
-		ply:PrintMessage(HUD_PRINTTALK, "You are not connected to Discord.")
+		printChat(ply, "You are not connected to Discord.")
 		sendHelp(ply)
 	end
 end)
