@@ -181,8 +181,13 @@ function sendHelp(ply)
 end
 
 hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
-	if (string.sub(msg,1,9) != '!discord ') then return end
+	if (string.sub(msg,1,8) != '!discord') then return end
 	id = string.sub(msg,10)
+
+	if id == "" then
+		sendHelp(ply)
+		return ""
+	end
 
 	resolveUser(id, function(id, name)
 		ply:PrintMessage(HUD_PRINTTALK, "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
