@@ -159,7 +159,7 @@ function mute(val, ply)
 
 		error = "Error while muting: "..code.."/"..response.code.." - "..response.message
 
-		printChat(ply, error)
+		printChat(ply, Color(255, 70, 70), error)
 		log_con_err(error.." ("..ply:GetName()..")")
 
 		-- Don't activate the failsafe on the following errors
@@ -190,12 +190,12 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	end
 
 	resolveUser(id, function(id, name)
-		printChat(ply, "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
-		printChat(ply, "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
+		printChat(ply, Color(70, 255, 70), "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
+		printChat(ply, Color(240, 240, 240), "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
 		ids[ply:SteamID()] = id
 		saveIDs()
 	end, function(reason)
-		printChat(ply, reason)
+		printChat(ply, Color(255, 70, 70), reason)
 	end)
 
 	return ""
