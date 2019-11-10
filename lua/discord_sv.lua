@@ -211,6 +211,10 @@ hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(pl
 end)
 
 hook.Add("PlayerSpawn", "ttt_discord_bot_PlayerSpawn", function(ply)
+  if ply:GetNWBool("SpecDM_Enabled", false) then
+    return
+  end
+
   mute(false, ply)
 end)
 hook.Add("PlayerDisconnected", "ttt_discord_bot_PlayerDisconnected", function(ply)
