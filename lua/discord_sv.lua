@@ -52,6 +52,7 @@ function request(method, endpoint, callback, body, contenttype)
 		failed = function(err)
 			log_con_err("HTTP error during request")
 			log_con_err("method: "..method)
+			log_con_err("url: '"..cvar_api:GetString()..endpoint.."'")
 			log_con_err("endpoint: '"..endpoint.."'")
 			log_con_err("err: "..err)
 		end,
