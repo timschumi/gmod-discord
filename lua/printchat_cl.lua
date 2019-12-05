@@ -1,7 +1,7 @@
 net.Receive("printChat", function()
-	items = {}
+	local items = {}
 
-	id = net.ReadString()
+	local id = net.ReadString()
 	while id != "e" do
 		if id == "s" then
 			table.insert(items, net.ReadString())
