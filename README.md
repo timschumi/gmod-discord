@@ -27,7 +27,7 @@ Please note that the server that you put there will receive your whole request, 
 
 1. Copy the files from this repository into a new Folder in `garrysmod/addons/`.
 
-2. Create an Application with an attached Bot user in the [Discord Developer Portal](https://discordapp.com/developers/applications) and fill in the Client Secret into the `discord_token` variable in the console.
+2. Create an Application with an attached Bot user in the [Discord Developer Portal](https://discordapp.com/developers/applications) and fill in the Token (from the "Bot" tab) into the `discord_token` variable in the console.
 
 3. Invite the Bot to your server and allow it to mute players (either globally or per-channel).
 
