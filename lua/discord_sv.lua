@@ -35,6 +35,10 @@ function request(method, endpoint, callback, body)
 		log_con_err("The bot token has not been set!")
 		return
 	end
+	frequest(method, endpoint, callback, body)
+end
+
+function frequest(method, endpoint, callback, body)
 	if !cvar_enabled:GetBool() then
 		log_con_err("HTTP requests are disabled!")
 		return
@@ -229,4 +233,36 @@ hook.Add("PostPlayerDeath", "ttt_discord_bot_PostPlayerDeath", function(ply)
 	if (GetRoundState() == 3) then
 		mute(true, ply)
 	end
+end)
+
+
+cvars.AddChangeCallback("discord_api", function(name, old, new)
+	frequest("GET", "/gateway", function(code, body, headers)
+		if code == 200 then
+			log_con("API URL is valid.")
+		else
+			log_con_err("API URL is invalid.")
+		end
+	end)
+end)
+
+cvars.AddChangeCallback("discord_token", function(name, old, new)
+	frequest("GET", "/gateway/bot", function(code, body, headers)
+		if code == 200 then
+			log_con("Bot token is valid.")
+		else
+			log_con_err("Bot token is invalid.")
+			log_con_err("Make sure that you copied the \"Token\", not the \"Client ID\" or the \"Client Secret\".")
+		end
+	end)
+end)
+
+cvars.AddChangeCallback("discord_guild", function(name, old, new)
+	frequest("GET", "/guilds/"..new, function(code, body, headers)
+		if code == 200 then
+			log_con("Guild ID is valid and accessible.")
+		else
+			log_con_err("Guild ID is invalid (or could not be accessed).")
+		end
+	end)
 end)
