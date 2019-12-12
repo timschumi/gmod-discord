@@ -26,7 +26,7 @@ function dc_disable()
 	log_con("Disabling requests to not get on the Discord developers' nerves!")
 end
 
-function request(method, endpoint, callback, body, contenttype)
+function request(method, endpoint, callback, body)
 	if cvar_guild:GetString() == "" then
 		log_con_err("The guild has not been set!")
 		return
@@ -39,7 +39,7 @@ function request(method, endpoint, callback, body, contenttype)
 		log_con_err("HTTP requests are disabled!")
 		return
 	end
-	HTTP({
+	req = {
 		failed = function(err)
 			log_con_err("HTTP error during request")
 			log_con_err("method: "..method)
@@ -51,12 +51,17 @@ function request(method, endpoint, callback, body, contenttype)
 		url = cvar_api:GetString()..endpoint,
 		method = method,
 		body = body,
-		["type"] = contenttype,
 		headers = {
 			["Authorization"] = "Bot "..cvar_token:GetString(),
 			["User-Agent"] = "DiscordBot (https://github.com/timschumi/gmod-discord, v1.0)"
 		}
-	})
+	}
+
+	if (body) then
+		req["type"] = "application/json"
+	end
+
+	HTTP(req)
 end
 
 -- success/fail are callback functions that handle a search result.
@@ -160,7 +165,7 @@ function mute(val, ply)
 		end
 
 		dc_disable()
-	end, '{"mute": '..tostring(val)..'}', "application/json")
+	end, '{"mute": '..tostring(val)..'}')
 end
 
 function sendHelp(ply)
