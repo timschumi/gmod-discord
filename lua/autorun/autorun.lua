@@ -10,6 +10,7 @@ if CLIENT then
 end
 
 if SERVER then
+	include("keyvalstore.lua")
 	include("printchat_sv.lua")
 	include("discord_sv.lua")
 end

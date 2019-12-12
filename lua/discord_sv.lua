@@ -1,6 +1,5 @@
 util.AddNetworkString("drawMute")
 
-FILEPATH = "ttt_discord_bot.dat"
 cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
 cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
 cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
@@ -8,18 +7,10 @@ cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHI
 
 muted = {}
 
-ids = {}
-ids_raw = file.Read( FILEPATH, "DATA" )
-if (ids_raw) then
-	ids = util.JSONToTable(ids_raw)
-end
+ids = KeyValStore:new("ttt_discord_bot.dat")
 
 if pcall(require, "chttp") then
 	HTTP = CHTTP
-end
-
-function saveIDs()
-	file.Write( FILEPATH, util.TableToJSON(ids))
 end
 
 function log_con(text)
@@ -135,7 +126,7 @@ function mute(val, ply)
 	end
 
 	-- Do we have a saved Discord ID?
-	if (not ids[ply:SteamID()]) then
+	if (not ids:get(ply:SteamID())) then
 		return
 	end
 
@@ -144,7 +135,7 @@ function mute(val, ply)
 		return
 	end
 
-	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids[ply:SteamID()], function(code, body, headers)
+	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids:get(ply:SteamID()), function(code, body, headers)
 		if code == 204 then
 			if val then
 				ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
@@ -193,8 +184,7 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	resolveUser(id, function(id, name)
 		printChat(ply, Color(70, 255, 70), "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
 		printChat(ply, Color(240, 240, 240), "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
-		ids[ply:SteamID()] = id
-		saveIDs()
+		ids:set(ply:SteamID(), id)
 	end, function(reason)
 		printChat(ply, Color(255, 70, 70), reason)
 	end)
@@ -203,7 +193,7 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 end)
 
 hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(ply)
-	if (ids[ply:SteamID()]) then
+	if (ids:get(ply:SteamID())) then
 		printChat(ply, "You are connected to Discord.")
 	else
 		printChat(ply, "You are not connected to Discord.")
