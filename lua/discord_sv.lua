@@ -9,16 +9,22 @@ muted = {}
 
 ids = KeyValStore:new("ttt_discord_bot.dat")
 
-if pcall(require, "chttp") then
-	HTTP = CHTTP
-end
-
 function log_con(text)
 	print("[Discord] "..text)
 end
 
 function log_con_err(text)
 	log_con("[ERROR] "..text)
+end
+
+if pcall(require, "steamhttp") then
+	log_con("Using STEAMHTTP implementation.")
+	HTTP = STEAMHTTP
+elseif pcall(require, "chttp") then
+	log_con("Using CHTTP implementation.")
+	HTTP = CHTTP
+else
+	log_con("Using default HTTP implementation.")
 end
 
 function dc_disable()
@@ -55,6 +61,7 @@ function frequest(method, endpoint, callback, body)
 		url = cvar_api:GetString()..endpoint,
 		method = method,
 		body = body,
+		useragent = "timschumi/gmod-discord",
 		headers = {
 			["Authorization"] = "Bot "..cvar_token:GetString(),
 			["User-Agent"] = "DiscordBot (https://github.com/timschumi/gmod-discord, v1.0)"
