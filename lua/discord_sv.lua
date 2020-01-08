@@ -217,29 +217,37 @@ hook.Add("PlayerInitialSpawn", "discord_PlayerInitialSpawn", function(ply)
 	end
 end)
 
+-- General mute/unmute hooks
 hook.Add("PlayerSpawn", "discord_PlayerSpawn", function(ply)
+  -- Don't unmute if we joined spectator deathmatch
   if ply:GetNWBool("SpecDM_Enabled", false) then
     return
   end
 
   mute(false, ply)
 end)
+
 hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
   mute(false, ply)
 end)
+
 hook.Add("ShutDown","discord_ShutDown", function()
   mute(false)
 end)
-hook.Add("TTTEndRound", "discord_TTTEndRound", function()
-	timer.Simple(0.1,function() mute(false) end)
-end)
-hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
-  mute(false)
-end)
+
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
 	if (GetRoundState() == 3) then
 		mute(true, ply)
 	end
+end)
+
+-- Trouble in Terrorist Town mute/unmute hooks
+hook.Add("TTTEndRound", "discord_TTTEndRound", function()
+	timer.Simple(0.1,function() mute(false) end)
+end)
+
+hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
+  mute(false)
 end)
 
 
