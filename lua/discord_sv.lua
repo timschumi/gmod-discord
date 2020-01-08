@@ -219,20 +219,20 @@ end)
 
 -- General mute/unmute hooks
 hook.Add("PlayerSpawn", "discord_PlayerSpawn", function(ply)
-  -- Don't unmute if we joined spectator deathmatch
-  if ply:GetNWBool("SpecDM_Enabled", false) then
-    return
-  end
+	-- Don't unmute if we joined spectator deathmatch
+	if ply:GetNWBool("SpecDM_Enabled", false) then
+		return
+	end
 
-  mute(false, ply)
+	mute(false, ply)
 end)
 
 hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
-  mute(false, ply)
+	mute(false, ply)
 end)
 
 hook.Add("ShutDown","discord_ShutDown", function()
-  mute(false)
+	mute(false)
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
@@ -247,7 +247,7 @@ hook.Add("TTTEndRound", "discord_TTTEndRound", function()
 end)
 
 hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
-  mute(false)
+	mute(false)
 end)
 
 
