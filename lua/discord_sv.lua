@@ -188,6 +188,22 @@ function sendHelp(ply)
 	printChat(ply, "  - Guild-specific nickname")
 end
 
+function commonRoundState()
+	if gmod.GetGamemode().Name == "Trouble in Terrorist Town" or
+	   gmod.GetGamemode().Name == "TTT2 (Advanced Update)" then
+		-- Round state 3 => Game is running
+		return ((GetRoundState() == 3) and 1 or 0)
+	end
+
+	if gmod.GetGamemode().Name == "Murder" then
+		-- Round state 1 => Game is running
+		return ((gmod.GetGamemode():GetRound() == 1) and 1 or 0)
+	end
+
+	-- Round state could not be determined
+	return -1
+end
+
 hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 	if (string.sub(msg,1,8) != '!discord') then return end
 	id = string.sub(msg,10)
@@ -236,7 +252,7 @@ hook.Add("ShutDown","discord_ShutDown", function()
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
-	if (GetRoundState() == 3) then
+	if (commonRoundState() == 1) then
 		mute(true, ply)
 	end
 end)
@@ -248,6 +264,17 @@ end)
 
 hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
 	mute(false)
+end)
+
+-- Murder mute/unmute hooks
+hook.Add("OnEndRound", "discord_OnEndRound", function()
+	timer.Simple(0.1,function() mute(false) end)
+end)
+
+hook.Add("OnStartRound", "discord_OnStartRound", function()
+	-- The delay is a workaround for Murder killing/respawning players during setup
+	-- See here for more information: https://github.com/MechanicalMind/murder/pull/71
+	timer.Simple(0.5,function() mute(false) end)
 end)
 
 
