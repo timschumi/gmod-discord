@@ -7,7 +7,7 @@ cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHI
 
 muted = {}
 
-ids = KeyValStore:new("ttt_discord_bot.dat")
+ids = KeyValStore:new("discord.dat")
 
 function log_con(text)
 	print("[Discord] "..text)
@@ -188,7 +188,7 @@ function sendHelp(ply)
 	printChat(ply, "  - Guild-specific nickname")
 end
 
-hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
+hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 	if (string.sub(msg,1,8) != '!discord') then return end
 	id = string.sub(msg,10)
 
@@ -208,7 +208,7 @@ hook.Add("PlayerSay", "ttt_discord_bot_PlayerSay", function(ply,msg)
 	return ""
 end)
 
-hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(ply)
+hook.Add("PlayerInitialSpawn", "discord_PlayerInitialSpawn", function(ply)
 	if (ids:get(ply:SteamID())) then
 		printChat(ply, "You are connected to Discord.")
 	else
@@ -217,26 +217,26 @@ hook.Add("PlayerInitialSpawn", "ttt_discord_bot_PlayerInitialSpawn", function(pl
 	end
 end)
 
-hook.Add("PlayerSpawn", "ttt_discord_bot_PlayerSpawn", function(ply)
+hook.Add("PlayerSpawn", "discord_PlayerSpawn", function(ply)
   if ply:GetNWBool("SpecDM_Enabled", false) then
     return
   end
 
   mute(false, ply)
 end)
-hook.Add("PlayerDisconnected", "ttt_discord_bot_PlayerDisconnected", function(ply)
+hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
   mute(false, ply)
 end)
-hook.Add("ShutDown","ttt_discord_bot_ShutDown", function()
+hook.Add("ShutDown","discord_ShutDown", function()
   mute(false)
 end)
-hook.Add("TTTEndRound", "ttt_discord_bot_TTTEndRound", function()
+hook.Add("TTTEndRound", "discord_TTTEndRound", function()
 	timer.Simple(0.1,function() mute(false) end)
 end)
-hook.Add("TTTBeginRound", "ttt_discord_bot_TTTBeginRound", function()--in case of round-restart via command
+hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
   mute(false)
 end)
-hook.Add("PostPlayerDeath", "ttt_discord_bot_PostPlayerDeath", function(ply)
+hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
 	if (GetRoundState() == 3) then
 		mute(true, ply)
 	end

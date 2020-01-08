@@ -1,6 +1,6 @@
-# TTT Discord Bot
+# Garry's Mod Discord Bot
 
-This is a Discord bot for the TTT gamemode in Garry's Mod that directly interfaces with the Discord API.
+This is a Discord bot for Garry's Mod that directly interfaces with the Discord API.
 It automatically mutes players when they die in-game and unmutes them when revived.
 
 The plugin doesn't work fully standalone right now, since direct HTTP accesses to the Discord API from

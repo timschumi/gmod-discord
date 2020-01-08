@@ -5,7 +5,7 @@ net.Receive("drawMute",function()
 	drawMute = net.ReadBool()
 end)
 
-hook.Add( "HUDPaint", "ttt_discord_bot_HUDPaint", function()
+hook.Add( "HUDPaint", "discord_HUDPaint", function()
 	if (!drawMute) then return end
 	surface.SetDrawColor(255, 255, 255, 255)
 	surface.SetMaterial(muteIcon)
