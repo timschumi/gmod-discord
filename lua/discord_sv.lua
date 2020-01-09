@@ -272,9 +272,7 @@ hook.Add("OnEndRound", "discord_OnEndRound", function()
 end)
 
 hook.Add("OnStartRound", "discord_OnStartRound", function()
-	-- The delay is a workaround for Murder killing/respawning players during setup
-	-- See here for more information: https://github.com/MechanicalMind/murder/pull/71
-	timer.Simple(0.5,function() mute(false) end)
+	mute(false)
 end)
 
 
