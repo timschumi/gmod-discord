@@ -19,12 +19,13 @@ end
 
 if pcall(require, "steamhttp") then
 	log_con("Using STEAMHTTP implementation.")
-	HTTP = STEAMHTTP
+	discordHTTP = STEAMHTTP
 elseif pcall(require, "chttp") then
 	log_con("Using CHTTP implementation.")
-	HTTP = CHTTP
+	discordHTTP = CHTTP
 else
 	log_con("Using default HTTP implementation.")
+	discordHTTP = HTTP
 end
 
 function dc_disable()
@@ -72,7 +73,7 @@ function frequest(method, endpoint, callback, body)
 		req["type"] = "application/json"
 	end
 
-	HTTP(req)
+	discordHTTP(req)
 end
 
 -- success/fail are callback functions that handle a search result.
