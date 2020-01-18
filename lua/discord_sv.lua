@@ -4,6 +4,7 @@ cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server 
 cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
 cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
 cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
+cvar_role = CreateConVar("discord_role", "", FCVAR_ARCHIVE, "If this is set, the role will be added/removed instead of muting/unmuting.")
 
 muted = {}
 
@@ -120,6 +121,34 @@ function resolveUser(search, success, fail, after)
 	end)
 end
 
+-- success/fail are callback functions that handle a search result.
+-- success gets one argument, the resolved role ID
+-- fail gets a single argument, the reason as a text.
+function resolveRole(search, success, fail)
+	request("GET", "/guilds/"..cvar_guild:GetString().."/roles", function(code, body, headers)
+		if code == 403 then
+			fail("I do not have access to the role list of the Discord server!")
+			return
+		end
+
+		if code != 200 then
+			fail("Got an HTTP error code that is neither 200, nor 403: "..code)
+			return
+		end
+
+		response = util.JSONToTable(body)
+
+		for _, entry in pairs(response) do
+			if search == entry.name then
+				success(entry.id)
+				return
+			end
+		end
+
+		fail("Could not find role in role list.")
+	end)
+end
+
 function sendClientIconInfo(ply,mute)
 	net.Start("drawMute")
 	net.WriteBool(mute)
@@ -130,14 +159,14 @@ function isMuted(ply)
 	return muted[ply] == true
 end
 
-function mute(val, ply)
+function switchstate(val, ply)
 	-- Sanitize val
 	val = (val == true)
 
 	-- Unmute all if we're unmuting and no player is given
 	if (not val and not ply) then
 		for ply,state in pairs(muted) do
-			if state then mute(false, ply) end
+			if state then switchstate(false, ply) end
 		end
 		return
 	end
@@ -152,6 +181,14 @@ function mute(val, ply)
 		return
 	end
 
+	if cvar_role:GetString() == "" then
+		setmute(ply, val)
+	else
+		setrole(ply, val)
+	end
+end
+
+function setmute(ply, val)
 	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids:get(ply:SteamID()), function(code, body, headers)
 		if code == 204 then
 			if val then
@@ -178,6 +215,53 @@ function mute(val, ply)
 
 		dc_disable()
 	end, '{"mute": '..tostring(val)..'}')
+end
+
+function setrole(ply, val)
+	request("GET", "/guilds/"..cvar_guild:GetString().."/members/"..ids:get(ply:SteamID()), function(code, body, headers)
+		response = util.JSONToTable(body)
+
+		if code != 200 then
+			error = "Error while retrieving user roles: "..code.."/"..response.code.." - "..response.message
+
+			printChat(ply, Color(255, 70, 70), error)
+			log_con_err(error.." ("..ply:GetName()..")")
+
+			dc_disable()
+			return
+		end
+
+		if val then
+			roles = response.roles
+			table.insert(roles, cvar_role:GetString())
+		else
+			roles = {}
+			for _, entry in pairs(response.roles) do
+				if entry != cvar_role:GetString() then
+					table.insert(roles, entry)
+				end
+			end
+		end
+
+		data = {roles = roles}
+
+		request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids:get(ply:SteamID()), function(code, body, headers)
+			if code == 204 then
+				sendClientIconInfo(ply, val)
+				muted[ply] = val
+				return
+			end
+
+			response = util.JSONToTable(body)
+
+			error = "Error while modifying role: "..code.."/"..response.code.." - "..response.message
+
+			printChat(ply, Color(255, 70, 70), error)
+			log_con_err(error.." ("..ply:GetName()..")")
+
+			dc_disable()
+		end, util.TableToJSON(data))
+	end)
 end
 
 function sendHelp(ply)
@@ -241,39 +325,39 @@ hook.Add("PlayerSpawn", "discord_PlayerSpawn", function(ply)
 		return
 	end
 
-	mute(false, ply)
+	switchstate(false, ply)
 end)
 
 hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
-	mute(false, ply)
+	switchstate(false, ply)
 end)
 
 hook.Add("ShutDown","discord_ShutDown", function()
-	mute(false)
+	switchstate(false)
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
 	if (commonRoundState() == 1) then
-		mute(true, ply)
+		switchstate(true, ply)
 	end
 end)
 
 -- Trouble in Terrorist Town mute/unmute hooks
 hook.Add("TTTEndRound", "discord_TTTEndRound", function()
-	timer.Simple(0.1,function() mute(false) end)
+	timer.Simple(0.1,function() switchstate(false) end)
 end)
 
 hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
-	mute(false)
+	switchstate(false)
 end)
 
 -- Murder mute/unmute hooks
 hook.Add("OnEndRound", "discord_OnEndRound", function()
-	timer.Simple(0.1,function() mute(false) end)
+	timer.Simple(0.1,function() switchstate(false) end)
 end)
 
 hook.Add("OnStartRound", "discord_OnStartRound", function()
-	mute(false)
+	switchstate(false)
 end)
 
 
@@ -305,5 +389,21 @@ cvars.AddChangeCallback("discord_guild", function(name, old, new)
 		else
 			log_con_err("Guild ID is invalid (or could not be accessed).")
 		end
+	end)
+end)
+
+cvars.AddChangeCallback("discord_role", function(name, old, new)
+	if tonumber(new) ~= nil then
+		log_con("Role ID is numeric and assumed to be correct")
+		return
+	end
+
+	log_con("New value is not numeric and will be resolved.")
+	resolveRole(new, function(id)
+		cvar_role:SetString(id)
+	end, function(reason)
+		log_con_err("Role ID could not be resolved, the variable will be cleared:")
+		log_con_err(reason)
+		cvar_role:SetString("")
 	end)
 end)
