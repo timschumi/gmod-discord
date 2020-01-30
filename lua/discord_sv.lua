@@ -80,7 +80,7 @@ end
 -- success gets two arguments, the user ID as the first and `<username>#<discriminator>` as the second.
 -- fail gets a single argument, the reason as a text.
 function resolveUser(search, success, fail, after)
-	endpoint = "/guilds/"..cvar_guild:GetString().."/members?limit=20"
+	endpoint = "/guilds/"..cvar_guild:GetString().."/members?limit=1000"
 	if after then
 		endpoint = endpoint.."&after="..after
 	end
@@ -111,7 +111,7 @@ function resolveUser(search, success, fail, after)
 			end
 		end
 
-		if table.getn(response) == 20 then
+		if table.getn(response) == 1000 then
 			resolveUser(search, success, fail, last)
 			return
 		end
