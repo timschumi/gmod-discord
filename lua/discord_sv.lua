@@ -147,8 +147,20 @@ function mute(val, ply)
 
 	-- Unmute all if we're unmuting and no player is given
 	if (not val and not ply) then
+		unmute_count = 0
 		for ply,state in pairs(muted) do
-			if state then mute(false, ply) end
+			if not state then
+				continue
+			end
+
+			mute(false, ply)
+			unmute_count = unmute_count + 1
+
+			-- Abort and continue in 10s if we sent 10 requests
+			if unmute_count == 10 then
+				timer.Simple(10, function() mute(false) end)
+				return
+			end
 		end
 		return
 	end
