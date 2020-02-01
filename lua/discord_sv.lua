@@ -112,7 +112,18 @@ function resolveUser(search, success, fail, after)
 		end
 
 		if table.getn(response) == 1000 then
-			resolveUser(search, success, fail, last)
+			local limit_remaining, limit_reset, delay
+
+			-- Sanitize limit
+			limit_remaining = headers["X-RateLimit-Remaining"] or headers["x-ratelimit-remaining"]
+			if limit_remaining ~= nil then limit_remaining = tonumber(limit_remaining) end
+
+			-- Sanitize reset
+			limit_reset = headers["X-RateLimit-Reset"] or headers["x-ratelimit-reset"]
+			if limit_reset ~= nil then limit_reset = tonumber(limit_reset) end
+
+			delay = (limit_remaining == 0 and limit_reset - os.time() or 0)
+			timer.Simple(delay, function() resolveUser(search, success, fail, last) end)
 			return
 		end
 
