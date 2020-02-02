@@ -7,6 +7,8 @@ cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHI
 
 muted = {}
 
+local gmcompat = include("gmcompat.lua")
+
 ids = KeyValStore:new("discord.dat")
 
 function log_con(text)
@@ -212,22 +214,6 @@ function sendHelp(ply)
 	printChat(ply, "  - Guild-specific nickname")
 end
 
-function commonRoundState()
-	if gmod.GetGamemode().Name == "Trouble in Terrorist Town" or
-	   gmod.GetGamemode().Name == "TTT2 (Advanced Update)" then
-		-- Round state 3 => Game is running
-		return ((GetRoundState() == 3) and 1 or 0)
-	end
-
-	if gmod.GetGamemode().Name == "Murder" then
-		-- Round state 1 => Game is running
-		return ((gmod.GetGamemode():GetRound() == 1) and 1 or 0)
-	end
-
-	-- Round state could not be determined
-	return -1
-end
-
 hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 	if (string.sub(msg,1,8) != '!discord') then return end
 	id = string.sub(msg,10)
@@ -276,27 +262,17 @@ hook.Add("ShutDown","discord_ShutDown", function()
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
-	if (commonRoundState() == 1) then
+	if (gmcompat.roundState() == 1) then
 		mute(true, ply)
 	end
 end)
 
--- Trouble in Terrorist Town mute/unmute hooks
-hook.Add("TTTEndRound", "discord_TTTEndRound", function()
-	timer.Simple(0.1,function() mute(false) end)
-end)
-
-hook.Add("TTTBeginRound", "discord_TTTBeginRound", function()--in case of round-restart via command
+gmcompat.hook("start", "discord_", function()
 	mute(false)
 end)
 
--- Murder mute/unmute hooks
-hook.Add("OnEndRound", "discord_OnEndRound", function()
+gmcompat.hook("end", "discord_", function()
 	timer.Simple(0.1,function() mute(false) end)
-end)
-
-hook.Add("OnStartRound", "discord_OnStartRound", function()
-	mute(false)
 end)
 
 
