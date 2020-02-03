@@ -156,7 +156,10 @@ function mute(val, ply)
 			unmute_count = unmute_count + 1
 
 			-- Abort and continue in 10s if we sent 10 requests
-			if unmute_count == 10 then
+			-- If a person dies on round end, there is a chance that
+			-- this person is quick-toggled. We'll go safe by only
+			-- unmuting 9 people at a time.
+			if unmute_count == 9 then
 				timer.Simple(10, function() mute(false) end)
 				return
 			end
