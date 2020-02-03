@@ -4,11 +4,19 @@
 
 local gmcompat = {}
 
+local function log(msg)
+	print("[gmcompat] "..msg)
+end
+
+local function err(msg)
+	ErrorNoHalt("[gmcompat] [ERROR] "..msg.."\n")
+end
+
 -- Returns 1 if the round is still on
 -- Returns 0 otherwise (or -1 if unsupported)
 function gmcompat.roundState()
 	if gmod.GetGamemode() == nil then
-		ErrorNoHalt("[gmcompat] Gamemode isn't initialized yet!")
+		err("Gamemode isn't initialized yet!")
 		return -1
 	end
 
@@ -24,13 +32,13 @@ function gmcompat.roundState()
 	end
 
 	-- Round state could not be determined
-	ErrorNoHalt("[gmcompat] roundState: Could not determine gamemode.")
+	err("roundState: Could not determine gamemode.")
 	return -1
 end
 
 function gmcompat.roundStartHook()
 	if gmod.GetGamemode() == nil then
-		ErrorNoHalt("[gmcompat] Gamemode isn't initialized yet!")
+		err("Gamemode isn't initialized yet!")
 		return nil
 	end
 
@@ -44,13 +52,13 @@ function gmcompat.roundStartHook()
 	end
 
 	-- Hook name could not be determined
-	ErrorNoHalt("[gmcompat] roundStartHook: Could not determine gamemode.")
+	err("roundStartHook: Could not determine gamemode.")
 	return nil
 end
 
 function gmcompat.roundEndHook()
 	if gmod.GetGamemode() == nil then
-		ErrorNoHalt("[gmcompat] Gamemode isn't initialized yet!")
+		err("Gamemode isn't initialized yet!")
 		return nil
 	end
 
@@ -64,7 +72,7 @@ function gmcompat.roundEndHook()
 	end
 
 	-- Hook name could not be determined
-	ErrorNoHalt("[gmcompat] roundEndHook: Could not determine gamemode.")
+	err("roundEndHook: Could not determine gamemode.")
 	return nil
 end
 
@@ -79,12 +87,12 @@ function gmcompat.hook(target, prefix, func)
 	elseif target == "end" then
 		hookname = gmcompat.roundEndHook()
 	else
-		ErrorNoHalt("[gmcompat] hook: Unknown hook type used: "..target)
+		err("hook: Unknown hook type used: '"..target.."'")
 		return
 	end
 
 	if hookname == nil then
-		print("[gmcompat] hook: Could not find hook; the actual error has probably been logged above.")
+		log("hook: Could not find hook; the actual error has probably been logged above.")
 		return
 	end
 

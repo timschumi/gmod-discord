@@ -12,37 +12,31 @@ local KeyValStore = include("keyvalstore.lua")
 
 local ids = KeyValStore:new("discord.dat")
 
-function log_con(text)
-	print("[Discord] "..text)
+local function log(msg)
+	print("[discord] "..msg)
 end
 
-function log_con_err(text)
-	log_con("[ERROR] "..text)
+local function err(msg)
+	ErrorNoHalt("[discord] [ERROR] "..msg.."\n")
 end
 
 if pcall(require, "steamhttp") then
-	log_con("Using STEAMHTTP implementation.")
+	log("Using STEAMHTTP implementation.")
 	discordHTTP = STEAMHTTP
 elseif pcall(require, "chttp") then
-	log_con("Using CHTTP implementation.")
+	log("Using CHTTP implementation.")
 	discordHTTP = CHTTP
 else
-	log_con("Using default HTTP implementation.")
-	discordHTTP = HTTP
-end
-
-function dc_disable()
-	cvar_enabled:SetBool(false)
-	log_con("Disabling requests to not get on the Discord developers' nerves!")
+	error("Found no suitable HTTP implementation")
 end
 
 function request(method, endpoint, callback, body)
 	if cvar_guild:GetString() == "" then
-		log_con_err("The guild has not been set!")
+		err("The guild has not been set!")
 		return
 	end
 	if cvar_token:GetString() == "" then
-		log_con_err("The bot token has not been set!")
+		err("The bot token has not been set!")
 		return
 	end
 	frequest(method, endpoint, callback, body)
@@ -50,16 +44,16 @@ end
 
 function frequest(method, endpoint, callback, body)
 	if !cvar_enabled:GetBool() then
-		log_con_err("HTTP requests are disabled!")
+		err("HTTP requests are disabled!")
 		return
 	end
 	req = {
 		failed = function(err)
-			log_con_err("HTTP error during request")
-			log_con_err("method: "..method)
-			log_con_err("url: '"..cvar_api:GetString()..endpoint.."'")
-			log_con_err("endpoint: '"..endpoint.."'")
-			log_con_err("err: "..err)
+			err("HTTP error during request")
+			err("method: "..method)
+			err("url: '"..cvar_api:GetString()..endpoint.."'")
+			err("endpoint: '"..endpoint.."'")
+			err("err: "..err)
 		end,
 		success = callback,
 		url = cvar_api:GetString()..endpoint,
@@ -192,17 +186,17 @@ function mute(val, ply)
 		muted[ply] = not val
 		response = util.JSONToTable(body)
 
-		error = "Error while muting: "..code.."/"..response.code.." - "..response.message
+		message = "Error while muting: "..code.."/"..response.code.." - "..response.message
 
-		printChat(ply, Color(255, 70, 70), error)
-		log_con_err(error.." ("..ply:GetName()..")")
+		printChat(ply, Color(255, 70, 70), message)
+		err(message.." ("..ply:GetName()..")")
 
 		-- Don't activate the failsafe on the following errors
 		if code == 400 and response.code == 40032 then -- Target user is not connected to voice.
 			return
 		end
 
-		dc_disable()
+		cvar_enabled:SetBool(false)
 	end, '{"mute": '..tostring(val)..'}')
 end
 
@@ -282,9 +276,9 @@ end)
 cvars.AddChangeCallback("discord_api", function(name, old, new)
 	frequest("GET", "/gateway", function(code, body, headers)
 		if code == 200 then
-			log_con("API URL is valid.")
+			log("API URL is valid.")
 		else
-			log_con_err("API URL is invalid.")
+			err("API URL is invalid.")
 		end
 	end)
 end)
@@ -292,10 +286,10 @@ end)
 cvars.AddChangeCallback("discord_token", function(name, old, new)
 	frequest("GET", "/gateway/bot", function(code, body, headers)
 		if code == 200 then
-			log_con("Bot token is valid.")
+			log("Bot token is valid.")
 		else
-			log_con_err("Bot token is invalid.")
-			log_con_err("Make sure that you copied the \"Token\", not the \"Client ID\" or the \"Client Secret\".")
+			err("Bot token is invalid.")
+			err("Make sure that you copied the \"Token\", not the \"Client ID\" or the \"Client Secret\".")
 		end
 	end)
 end)
@@ -303,9 +297,9 @@ end)
 cvars.AddChangeCallback("discord_guild", function(name, old, new)
 	frequest("GET", "/guilds/"..new, function(code, body, headers)
 		if code == 200 then
-			log_con("Guild ID is valid and accessible.")
+			log("Guild ID is valid and accessible.")
 		else
-			log_con_err("Guild ID is invalid (or could not be accessed).")
+			err("Guild ID is invalid (or could not be accessed).")
 		end
 	end)
 end)
