@@ -260,9 +260,11 @@ hook.Add("ShutDown","discord_ShutDown", function()
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
+timer.Simple(0.2, function()
 	if (gmcompat.roundState() == 1) then
 		mute(true, ply)
 	end
+end)
 end)
 
 gmcompat.hook("start", "discord_", function()
@@ -270,7 +272,7 @@ gmcompat.hook("start", "discord_", function()
 end)
 
 gmcompat.hook("end", "discord_", function()
-	timer.Simple(0.1,function() mute(false) end)
+	mute(false)
 end)
 
 
