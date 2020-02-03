@@ -1,16 +1,16 @@
 util.AddNetworkString("drawMute")
 
-cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
-cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
-cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
-cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
+local cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
+local cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
+local cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
+local cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
 
-muted = {}
+local muted = {}
 
 local gmcompat = include("gmcompat.lua")
 local KeyValStore = include("keyvalstore.lua")
 
-ids = KeyValStore:new("discord.dat")
+local ids = KeyValStore:new("discord.dat")
 
 function log_con(text)
 	print("[Discord] "..text)
@@ -217,7 +217,7 @@ end
 
 hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 	if (string.sub(msg,1,8) != '!discord') then return end
-	id = string.sub(msg,10)
+	local id = string.sub(msg,10)
 
 	if id == "" then
 		sendHelp(ply)
