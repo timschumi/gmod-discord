@@ -8,6 +8,7 @@ cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHI
 muted = {}
 
 local gmcompat = include("gmcompat.lua")
+local KeyValStore = include("keyvalstore.lua")
 
 ids = KeyValStore:new("discord.dat")
 

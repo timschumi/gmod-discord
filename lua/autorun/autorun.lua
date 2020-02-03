@@ -11,7 +11,6 @@ end
 
 if SERVER then
 hook.Add("Initialize", "discord_Initialize", function()
-	include("keyvalstore.lua")
 	include("printchat_sv.lua")
 	include("discord_sv.lua")
 end)

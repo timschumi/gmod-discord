@@ -1,4 +1,4 @@
-KeyValStore = {
+local KeyValStore = {
 	data = {},
 	file = nil
 }
@@ -25,3 +25,5 @@ function KeyValStore:set(key, value)
 	self.data[key] = value
 	file.Write(self.file, util.TableToJSON(self.data))
 end
+
+return KeyValStore
