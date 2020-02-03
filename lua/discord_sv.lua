@@ -140,10 +140,6 @@ function sendClientIconInfo(ply,mute)
 	net.Send(ply)
 end
 
-function isMuted(ply)
-	return muted[ply] == true
-end
-
 function mute(val, ply)
 	-- Sanitize val
 	val = (val == true)
@@ -174,10 +170,11 @@ function mute(val, ply)
 	end
 
 	-- Is the player already muted/unmuted?
-	if (val == isMuted(ply)) then
+	if (val == muted[ply]) then
 		return
 	end
 
+	muted[ply] = val
 	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids:get(ply:SteamID()), function(code, body, headers)
 		if code == 204 then
 			if val then
@@ -186,10 +183,10 @@ function mute(val, ply)
 				ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
 			end
 			sendClientIconInfo(ply, val)
-			muted[ply] = val
 			return
 		end
 
+		muted[ply] = not val
 		response = util.JSONToTable(body)
 
 		error = "Error while muting: "..code.."/"..response.code.." - "..response.message
