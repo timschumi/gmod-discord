@@ -49,11 +49,10 @@ function frequest(method, endpoint, callback, body)
 	end
 	req = {
 		failed = function(err)
-			err("HTTP error during request")
-			err("method: "..method)
-			err("url: '"..cvar_api:GetString()..endpoint.."'")
-			err("endpoint: '"..endpoint.."'")
-			err("err: "..err)
+			err("HTTP: "..err)
+			log("method: "..method)
+			log("url: '"..cvar_api:GetString()..endpoint.."'")
+			log("endpoint: '"..endpoint.."'")
 		end,
 		success = callback,
 		url = cvar_api:GetString()..endpoint,
@@ -278,7 +277,7 @@ cvars.AddChangeCallback("discord_api", function(name, old, new)
 		if code == 200 then
 			log("API URL is valid.")
 		else
-			err("API URL is invalid.")
+			log("API URL is invalid.")
 		end
 	end)
 end)
@@ -288,8 +287,8 @@ cvars.AddChangeCallback("discord_token", function(name, old, new)
 		if code == 200 then
 			log("Bot token is valid.")
 		else
-			err("Bot token is invalid.")
-			err("Make sure that you copied the \"Token\", not the \"Client ID\" or the \"Client Secret\".")
+			log("Bot token is invalid.")
+			log("Make sure that you copied the \"Token\", not the \"Client ID\" or the \"Client Secret\".")
 		end
 	end)
 end)
@@ -299,7 +298,7 @@ cvars.AddChangeCallback("discord_guild", function(name, old, new)
 		if code == 200 then
 			log("Guild ID is valid and accessible.")
 		else
-			err("Guild ID is invalid (or could not be accessed).")
+			log("Guild ID is invalid (or could not be accessed).")
 		end
 	end)
 end)
