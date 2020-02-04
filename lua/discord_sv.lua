@@ -166,7 +166,7 @@ function mute(val, ply)
 	end
 
 	-- Is the player already muted/unmuted?
-	if (val == muted[ply]) then
+	if (val == (muted[ply] == true)) then
 		return
 	end
 
