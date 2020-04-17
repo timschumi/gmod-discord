@@ -1,4 +1,9 @@
-include("gmcompat.lua")
+if not pcall(include, "gmcompat.lua") or gmcompat == nil then
+	ErrorNoHalt("[discord] [ERROR] The `gmcompat` library is not present or could not be loaded.\n")
+	print("[discord] [ERROR] Please make sure that you are subscribed to the addon and/or added it to your server collection:")
+	print("[discord] [ERROR] https://steamcommunity.com/workshop/filedetails/?id=2063714458")
+	return
+end
 
 util.AddNetworkString("drawMute")
 
