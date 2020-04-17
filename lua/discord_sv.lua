@@ -1,3 +1,5 @@
+include("gmcompat.lua")
+
 util.AddNetworkString("drawMute")
 
 local cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
@@ -7,7 +9,6 @@ local cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR
 
 local muted = {}
 
-local gmcompat = include("gmcompat.lua")
 local KeyValStore = include("keyvalstore.lua")
 
 local ids = KeyValStore:new("discord.dat")
