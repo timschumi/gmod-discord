@@ -145,6 +145,11 @@ function mute(val, ply)
 				continue
 			end
 
+			if not IsValid(ply) then
+				muted[ply] = nil
+				continue
+			end
+
 			mute(false, ply)
 			unmute_count = unmute_count + 1
 
