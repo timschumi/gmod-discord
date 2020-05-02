@@ -33,7 +33,12 @@ elseif pcall(require, "chttp") then
 	log("Using CHTTP implementation.")
 	discordHTTP = CHTTP
 else
-	error("Found no suitable HTTP implementation")
+	log("Using default HTTP implementation.")
+	discordHTTP = HTTP
+
+	if cvar_api:GetString() == "https://discordapp.com/api" then
+		err("Using the default HTTP implementation and API server. This is probably not what you want!")
+	end
 end
 
 function request(method, endpoint, callback, body)
