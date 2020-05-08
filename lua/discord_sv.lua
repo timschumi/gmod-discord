@@ -10,7 +10,7 @@ util.AddNetworkString("drawMute")
 local cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/server ID that should be acted upon.")
 local cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
 local cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
-local cvar_api = CreateConVar("discord_api", "https://discordapp.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
+local cvar_api = CreateConVar("discord_api", "https://discord.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
 
 local muted = {}
 
@@ -36,7 +36,7 @@ else
 	log("Using default HTTP implementation.")
 	discordHTTP = HTTP
 
-	if cvar_api:GetString() == "https://discordapp.com/api" then
+	if cvar_api:GetString() == "https://discordapp.com/api" or cvar_api:GetString() == "https://discord.com/api" then
 		err("Using the default HTTP implementation and API server. This is probably not what you want!")
 	end
 end
