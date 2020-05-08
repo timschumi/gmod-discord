@@ -14,9 +14,7 @@ local cvar_api = CreateConVar("discord_api", "https://discord.com/api", FCVAR_AR
 
 local muted = {}
 
-local KeyValStore = include("keyvalstore.lua")
-
-local ids = KeyValStore:new("discord.dat")
+local ids = include("keyvalstore.lua"):new("discord.dat")
 
 local function log(msg)
 	print("[discord] "..msg)
