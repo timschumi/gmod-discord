@@ -272,6 +272,10 @@ hook.Add("ShutDown","discord_ShutDown", function()
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
+	if (gmcompat.roundState() != gmcompat.ROUNDSTATE_LIVE) then
+		return
+	end
+
 timer.Simple(0.2, function()
 	if (gmcompat.roundState() == 1) then
 		mute(true, ply)
