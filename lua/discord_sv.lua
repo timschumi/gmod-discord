@@ -57,8 +57,8 @@ function frequest(method, endpoint, callback, body)
 		return
 	end
 	req = {
-		failed = function(err)
-			err("HTTP: "..err)
+		failed = function(msg)
+			err("HTTP: "..msg)
 			log("method: "..method)
 			log("url: '"..cvar_api:GetString()..endpoint.."'")
 			log("endpoint: '"..endpoint.."'")
