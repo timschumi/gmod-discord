@@ -1,14 +1,13 @@
-local KeyValStore = {
-	data = {},
-	file = nil
-}
+local KeyValStore = {}
 
 function KeyValStore:new(filename)
-	o = o or {}
+	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 
 	o.file = filename
+	o.data = {}
+
 	data_raw = file.Read(filename, "DATA")
 	if (data_raw) then
 		o.data = util.JSONToTable(data_raw)
