@@ -152,34 +152,6 @@ function mute(val, ply)
 	-- Sanitize val
 	val = (val == true)
 
-	-- Unmute all if we're unmuting and no player is given
-	if (not val and not ply) then
-		unmute_count = 0
-		for ply,state in pairs(muted) do
-			if not state then
-				continue
-			end
-
-			if not IsValid(ply) then
-				muted[ply] = nil
-				continue
-			end
-
-			mute(false, ply)
-			unmute_count = unmute_count + 1
-
-			-- Abort and continue in 10s if we sent 10 requests
-			-- If a person dies on round end, there is a chance that
-			-- this person is quick-toggled. We'll go safe by only
-			-- unmuting 9 people at a time.
-			if unmute_count == 9 then
-				timer.Simple(10, function() mute(false) end)
-				return
-			end
-		end
-		return
-	end
-
 	-- Do we have a saved Discord ID?
 	if (not ply:getDiscordID()) then
 		return
@@ -222,6 +194,32 @@ function mute(val, ply)
 
 		cvar_enabled:SetBool(false)
 	end, '{"mute": '..tostring(val)..'}')
+end
+
+function unmuteAll()
+	unmute_count = 0
+	for ply,state in pairs(muted) do
+		if not state then
+			continue
+		end
+
+		if not IsValid(ply) then
+			muted[ply] = nil
+			continue
+		end
+
+		mute(false, ply)
+		unmute_count = unmute_count + 1
+
+		-- Abort and continue in 10s if we sent 10 requests
+		-- If a person dies on round end, there is a chance that
+		-- this person is quick-toggled. We'll go safe by only
+		-- unmuting 9 people at a time.
+		if unmute_count == 9 then
+			timer.Simple(10, function() unmuteAll() end)
+			return
+		end
+	end
 end
 
 function sendHelp(ply)
@@ -277,7 +275,7 @@ hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
 end)
 
 hook.Add("ShutDown","discord_ShutDown", function()
-	mute(false)
+	unmuteAll()
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
@@ -293,11 +291,11 @@ end)
 end)
 
 gmcompat.hook("start", "discord_", function()
-	mute(false)
+	unmuteAll()
 end)
 
 gmcompat.hook("end", "discord_", function()
-	mute(false)
+	unmuteAll()
 end)
 
 
