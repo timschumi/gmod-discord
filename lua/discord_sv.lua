@@ -136,12 +136,6 @@ function resolveUser(search, success, fail, after)
 	end)
 end
 
-function sendClientIconInfo(ply,mute)
-	net.Start("drawMute")
-	net.WriteBool(mute)
-	net.Send(ply)
-end
-
 function mute(val, ply)
 	-- Sanitize val
 	val = (val == true)
@@ -192,7 +186,12 @@ function mute(val, ply)
 			else
 				ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
 			end
-			sendClientIconInfo(ply, val)
+
+			-- Render the mute icon for the client
+			net.Start("drawMute")
+			net.WriteBool(val)
+			net.Send(ply)
+
 			return
 		end
 
