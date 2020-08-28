@@ -148,44 +148,44 @@ function resolveUser(search, success, fail, after)
 	end)
 end
 
-function mute(val, ply)
+function plymeta:setDiscordMuted(val)
 	-- Sanitize val
 	val = (val == true)
 
 	-- Do we have a saved Discord ID?
-	if (not ply:getDiscordID()) then
+	if (not self:getDiscordID()) then
 		return
 	end
 
 	-- Is the player already muted/unmuted?
-	if (val == (muted[ply] == true)) then
+	if (val == (muted[self] == true)) then
 		return
 	end
 
-	muted[ply] = val
-	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ply:getDiscordID(), function(code, body, headers)
+	muted[self] = val
+	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..self:getDiscordID(), function(code, body, headers)
 		if code == 204 then
 			if val then
-				ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
+				self:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
 			else
-				ply:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
+				self:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
 			end
 
 			-- Render the mute icon for the client
 			net.Start("drawMute")
 			net.WriteBool(val)
-			net.Send(ply)
+			net.Send(self)
 
 			return
 		end
 
-		muted[ply] = not val
+		muted[self] = not val
 		response = util.JSONToTable(body)
 
 		message = "Error while muting: "..code.."/"..response.code.." - "..response.message
 
-		printChat(ply, Color(255, 70, 70), message)
-		err(message.." ("..ply:GetName()..")")
+		printChat(self, Color(255, 70, 70), message)
+		err(message.." ("..self:GetName()..")")
 
 		-- Don't activate the failsafe on the following errors
 		if code == 400 and response.code == 40032 then -- Target user is not connected to voice.
@@ -208,7 +208,7 @@ function unmuteAll()
 			continue
 		end
 
-		mute(false, ply)
+		ply:setDiscordMuted(false)
 		unmute_count = unmute_count + 1
 
 		-- Abort and continue in 10s if we sent 10 requests
@@ -267,11 +267,11 @@ hook.Add("PlayerSpawn", "discord_PlayerSpawn", function(ply)
 		return
 	end
 
-	mute(false, ply)
+	ply:setDiscordMuted(false)
 end)
 
 hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
-	mute(false, ply)
+	ply:setDiscordMuted(false)
 end)
 
 hook.Add("ShutDown","discord_ShutDown", function()
@@ -285,7 +285,7 @@ hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
 
 timer.Simple(0.2, function()
 	if (gmcompat.roundState() == gmcompat.ROUNDSTATE_LIVE) then
-		mute(true, ply)
+		ply:setDiscordMuted(true)
 	end
 end)
 end)
