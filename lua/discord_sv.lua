@@ -1,7 +1,17 @@
+-- Logging helpers
+local function log(msg)
+	print("[discord] "..msg)
+end
+
+local function err(msg)
+	ErrorNoHalt("[discord] [ERROR] "..msg.."\n")
+end
+
+-- Set up gmcompat
 if not pcall(include, "gmcompat.lua") or gmcompat == nil then
-	ErrorNoHalt("[discord] [ERROR] The `gmcompat` library is not present or could not be loaded.\n")
-	print("[discord] [ERROR] Please make sure that you are subscribed to the addon and/or added it to your server collection:")
-	print("[discord] [ERROR] https://steamcommunity.com/workshop/filedetails/?id=2063714458")
+	err("The `gmcompat` library is not present or could not be loaded.\n")
+	log("Please make sure that you are subscribed to the addon and/or added it to your server collection:")
+	log("https://steamcommunity.com/workshop/filedetails/?id=2063714458")
 	return
 end
 
@@ -15,14 +25,6 @@ local cvar_api = CreateConVar("discord_api", "https://discord.com/api", FCVAR_AR
 local muted = {}
 
 local ids = include("keyvalstore.lua"):new("discord.dat")
-
-local function log(msg)
-	print("[discord] "..msg)
-end
-
-local function err(msg)
-	ErrorNoHalt("[discord] [ERROR] "..msg.."\n")
-end
 
 if pcall(require, "steamhttp") then
 	log("Using STEAMHTTP implementation.")
