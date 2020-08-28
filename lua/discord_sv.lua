@@ -21,8 +21,7 @@ local cvar_guild = CreateConVar("discord_guild", "", FCVAR_ARCHIVE, "The guild/s
 local cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTRECORD + FCVAR_PROTECTED + FCVAR_UNLOGGED + FCVAR_UNREGISTERED, "The Discord bot token that the plugin uses.")
 local cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
 local cvar_api = CreateConVar("discord_api", "https://discord.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
-
-local muted = {}
+local cvar_delay = CreateConVar("discord_delay", "0.2", FCVAR_ARCHIVE, "Delay between mute request and actual muting.")
 
 local ids = include("keyvalstore.lua"):new("discord.dat")
 
@@ -149,20 +148,53 @@ function resolveUser(search, success, fail, after)
 end
 
 function plymeta:setDiscordMuted(val)
-	-- Sanitize val
-	val = (val == true)
-
 	-- Do we have a saved Discord ID?
 	if (not self:getDiscordID()) then
-		return
+		return false
 	end
 
-	-- Is the player already muted/unmuted?
-	if (val == (muted[self] == true)) then
-		return
+	-- Are we about to mute/unmute the person anyways?
+	if self.discord_mute_requested == val then
+		return false
 	end
 
-	muted[self] = val
+	self.discord_mute_requested = val
+
+	-- Is a request already running?
+	if self.discord_in_progress then
+		return false
+	end
+
+	-- Request is not running, so start a new request
+	self.discord_in_progress = true
+
+	timer.Simple(cvar_delay:GetFloat(), function()
+		-- Unset the "waiting for delay" flag
+		self.discord_in_progress = false
+
+		-- Do we have to do something
+		if (self.discord_mute_requested == self.discord_muted) then
+			return
+		end
+
+		-- Actually send the request
+		self:forceDiscordMuted(self.discord_mute_requested)
+	end)
+
+	return true
+end
+
+function plymeta:forceDiscordMuted(val)
+	-- Do we have a saved Discord ID?
+	if (not self:getDiscordID()) then
+		return false
+	end
+
+	-- If we are at that state and no change is planned, abort.
+	if self.discord_mute == val and self.discord_mute_requested == val then
+		return false
+	end
+
 	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..self:getDiscordID(), function(code, body, headers)
 		if code == 204 then
 			if val then
@@ -170,6 +202,8 @@ function plymeta:setDiscordMuted(val)
 			else
 				self:PrintMessage(HUD_PRINTCENTER, "You're no longer muted in Discord!")
 			end
+
+			self.discord_muted = val
 
 			-- Render the mute icon for the client
 			net.Start("drawMute")
@@ -179,7 +213,6 @@ function plymeta:setDiscordMuted(val)
 			return
 		end
 
-		muted[self] = not val
 		response = util.JSONToTable(body)
 
 		message = "Error while muting: "..code.."/"..response.code.." - "..response.message
@@ -199,18 +232,13 @@ end
 function unmuteAll()
 	unmute_count = 0
 	for i,ply in ipairs(player.GetAll()) do
-		if not ply:isDiscordMuted() then
-			continue
+		-- Unmute and check whether we actually made a request
+		if ply:setDiscordMuted(false) then
+			unmute_count = unmute_count + 1
 		end
 
-		ply:setDiscordMuted(false)
-		unmute_count = unmute_count + 1
-
 		-- Abort and continue in 10s if we sent 10 requests
-		-- If a person dies on round end, there is a chance that
-		-- this person is quick-toggled. We'll go safe by only
-		-- unmuting 9 people at a time.
-		if unmute_count == 9 then
+		if unmute_count == 10 then
 			timer.Simple(10, function() unmuteAll() end)
 			return
 		end
@@ -247,6 +275,11 @@ hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 end)
 
 hook.Add("PlayerInitialSpawn", "discord_PlayerInitialSpawn", function(ply)
+	-- Set initial variables
+	ply.discord_muted = false
+	ply.discord_mute_requested = false
+	ply.discord_in_progress = false
+
 	if (ply:getDiscordID()) then
 		printChat(ply, "You are connected to Discord.")
 	else
@@ -266,11 +299,13 @@ hook.Add("PlayerSpawn", "discord_PlayerSpawn", function(ply)
 end)
 
 hook.Add("PlayerDisconnected", "discord_PlayerDisconnected", function(ply)
-	ply:setDiscordMuted(false)
+	ply:forceDiscordMuted(false)
 end)
 
 hook.Add("ShutDown","discord_ShutDown", function()
-	unmuteAll()
+	for i,ply in ipairs(player.GetAll()) do
+		ply:forceDiscordMuted(false)
+	end
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
@@ -278,11 +313,7 @@ hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
 		return
 	end
 
-timer.Simple(0.2, function()
-	if (gmcompat.roundState() == gmcompat.ROUNDSTATE_LIVE) then
-		ply:setDiscordMuted(true)
-	end
-end)
+	ply:setDiscordMuted(true)
 end)
 
 gmcompat.hook("start", "discord_", function()
