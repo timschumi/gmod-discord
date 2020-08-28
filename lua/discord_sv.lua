@@ -26,6 +26,16 @@ local muted = {}
 
 local ids = include("keyvalstore.lua"):new("discord.dat")
 
+local plymeta = FindMetaTable("Player")
+if not plymeta then
+	err("Could not find the `Player` metatable. Huh.")
+	return
+end
+
+function plymeta:getDiscordID() return ids:get(self:SteamID()) end
+function plymeta:setDiscordID(id) return ids:set(self:SteamID(), id) end
+
+
 if pcall(require, "steamhttp") then
 	log("Using STEAMHTTP implementation.")
 	discordHTTP = STEAMHTTP
@@ -171,7 +181,7 @@ function mute(val, ply)
 	end
 
 	-- Do we have a saved Discord ID?
-	if (not ids:get(ply:SteamID())) then
+	if (not ply:getDiscordID()) then
 		return
 	end
 
@@ -181,7 +191,7 @@ function mute(val, ply)
 	end
 
 	muted[ply] = val
-	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ids:get(ply:SteamID()), function(code, body, headers)
+	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..ply:getDiscordID(), function(code, body, headers)
 		if code == 204 then
 			if val then
 				ply:PrintMessage(HUD_PRINTCENTER, "You're muted in Discord!")
@@ -235,7 +245,7 @@ hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 	resolveUser(id, function(id, name)
 		printChat(ply, Color(70, 255, 70), "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
 		printChat(ply, Color(240, 240, 240), "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
-		ids:set(ply:SteamID(), id)
+		ply:setDiscordID(id)
 	end, function(reason)
 		printChat(ply, Color(255, 70, 70), reason)
 	end)
@@ -244,7 +254,7 @@ hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 end)
 
 hook.Add("PlayerInitialSpawn", "discord_PlayerInitialSpawn", function(ply)
-	if (ids:get(ply:SteamID())) then
+	if (ply:getDiscordID()) then
 		printChat(ply, "You are connected to Discord.")
 	else
 		printChat(ply, "You are not connected to Discord.")
