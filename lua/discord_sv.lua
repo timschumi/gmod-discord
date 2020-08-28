@@ -48,10 +48,10 @@ function request(method, endpoint, callback, body)
 		err("The bot token has not been set!")
 		return
 	end
-	frequest(method, endpoint, callback, body)
+	_request(method, endpoint, callback, body)
 end
 
-function frequest(method, endpoint, callback, body)
+function _request(method, endpoint, callback, body)
 	if not cvar_enabled:GetBool() then
 		err("HTTP requests are disabled!")
 		return
@@ -291,7 +291,7 @@ end)
 
 
 cvars.AddChangeCallback("discord_api", function(name, old, new)
-	frequest("GET", "/gateway", function(code, body, headers)
+	_request("GET", "/gateway", function(code, body, headers)
 		if code == 200 then
 			log("API URL is valid.")
 		else
@@ -301,7 +301,7 @@ cvars.AddChangeCallback("discord_api", function(name, old, new)
 end)
 
 cvars.AddChangeCallback("discord_token", function(name, old, new)
-	frequest("GET", "/gateway/bot", function(code, body, headers)
+	_request("GET", "/gateway/bot", function(code, body, headers)
 		if code == 200 then
 			log("Bot token is valid.")
 		else
@@ -312,7 +312,7 @@ cvars.AddChangeCallback("discord_token", function(name, old, new)
 end)
 
 cvars.AddChangeCallback("discord_guild", function(name, old, new)
-	frequest("GET", "/guilds/"..new, function(code, body, headers)
+	_request("GET", "/guilds/"..new, function(code, body, headers)
 		if code == 200 then
 			log("Guild ID is valid and accessible.")
 		else
