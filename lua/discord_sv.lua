@@ -52,7 +52,7 @@ function request(method, endpoint, callback, body)
 end
 
 function frequest(method, endpoint, callback, body)
-	if !cvar_enabled:GetBool() then
+	if not cvar_enabled:GetBool() then
 		err("HTTP requests are disabled!")
 		return
 	end
@@ -96,7 +96,7 @@ function resolveUser(search, success, fail, after)
 			return
 		end
 
-		if code != 200 then
+		if code ~= 200 then
 			fail("Got an HTTP error code that is neither 200, nor 403: "..code)
 			return
 		end
@@ -223,7 +223,7 @@ function sendHelp(ply)
 end
 
 hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
-	if (string.sub(msg,1,8) != '!discord') then return end
+	if (string.sub(msg,1,8) ~= '!discord') then return end
 	local id = string.sub(msg,10)
 
 	if id == "" then
@@ -270,7 +270,7 @@ hook.Add("ShutDown","discord_ShutDown", function()
 end)
 
 hook.Add("PostPlayerDeath", "discord_PostPlayerDeath", function(ply)
-	if (gmcompat.roundState() != gmcompat.ROUNDSTATE_LIVE) then
+	if (gmcompat.roundState() ~= gmcompat.ROUNDSTATE_LIVE) then
 		return
 	end
 
