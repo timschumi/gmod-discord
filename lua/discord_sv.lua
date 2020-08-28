@@ -198,13 +198,8 @@ end
 
 function unmuteAll()
 	unmute_count = 0
-	for ply,state in pairs(muted) do
-		if not state then
-			continue
-		end
-
-		if not IsValid(ply) then
-			muted[ply] = nil
+	for i,ply in ipairs(player.GetAll()) do
+		if not ply:isDiscordMuted() then
 			continue
 		end
 
