@@ -13,8 +13,6 @@ function printChat(ply, ...)
 		end
 	end
 
-	net.WriteString("e")
-
 	if ply == nil then
 		net.Broadcast()
 	else
