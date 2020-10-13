@@ -104,12 +104,16 @@ function resolveUser(search, success, fail, after)
 
 	request("GET", endpoint, function(code, body, headers)
 		if code == 403 then
-			fail("I do not have access to the user list of the Discord server!")
+			fail("I do not have access to the user list of the Discord server! If you are the Bot owner, " ..
+			     "make sure that the \"Server Members Intent\" in the Bot settings is enabled.")
+			err("I do not have access to the user list of the Discord server!")
+			log("Make sure that you enabled the \"Server Members Intent\" in the Bot settings.")
 			return
 		end
 
 		if code ~= 200 then
 			fail("Got an HTTP error code that is neither 200, nor 403: "..code)
+			err("resolveUser: Got an HTTP error code that is neither 200, nor 403: "..code)
 			return
 		end
 
