@@ -96,7 +96,44 @@ end
 -- success/fail are callback functions that handle a search result.
 -- success gets two arguments, the user ID as the first and `<username>#<discriminator>` as the second.
 -- fail gets a single argument, the reason as a text.
-function resolveUser(search, success, fail, after)
+function resolveUser(search, success, fail)
+	-- Try to resolve by ID
+	resolveUserByID(search, success, function(_)
+		-- If that fails, try to iterate the user list
+		resolveUserBySearch(search, success, fail)
+	end)
+end
+
+-- search contains a user ID, which is directly resolved into a user.
+function resolveUserByID(search, success, fail)
+	if tonumber(search) == nil then
+		fail("Search parameter is not an ID.")
+		return
+	end
+
+	endpoint = "/guilds/"..cvar_guild:GetString().."/members/"..search
+
+	request("GET", endpoint, function(code, body, headers)
+		if code == 404 then
+			fail("Could not find user ID in guild.")
+			return
+		end
+
+		if code ~= 200 then
+			fail("Got an HTTP error code that is neither 200, nor 404: "..code)
+			err("resolveUserByID: Got an HTTP error code that is neither 200, nor 404: "..code)
+			return
+		end
+
+		response = util.JSONToTable(body)
+
+		success(response.user.id, response.user.username.."#"..response.user.discriminator)
+	end)
+end
+
+-- The bot iterates the user list and tries to resolve the user
+-- based on full username, short username or nickname.
+function resolveUserBySearch(search, success, fail, after)
 	endpoint = "/guilds/"..cvar_guild:GetString().."/members?limit=1000"
 	if after then
 		endpoint = endpoint.."&after="..after
@@ -104,8 +141,9 @@ function resolveUser(search, success, fail, after)
 
 	request("GET", endpoint, function(code, body, headers)
 		if code == 403 then
-			fail("I do not have access to the user list of the Discord server! If you are the Bot owner, " ..
-			     "make sure that the \"Server Members Intent\" in the Bot settings is enabled.")
+			fail("I do not have access to the user list of the Discord server!\n" ..
+			     "Tell the server owner to look at the server console.\n" ..
+			     "Meanwhile, try to connect your account via the Snowflake-ID.")
 			err("I do not have access to the user list of the Discord server!")
 			log("Make sure that you enabled the \"Server Members Intent\" in the Bot settings.")
 			return
@@ -113,7 +151,7 @@ function resolveUser(search, success, fail, after)
 
 		if code ~= 200 then
 			fail("Got an HTTP error code that is neither 200, nor 403: "..code)
-			err("resolveUser: Got an HTTP error code that is neither 200, nor 403: "..code)
+			err("resolveUserBySearch: Got an HTTP error code that is neither 200, nor 403: "..code)
 			return
 		end
 
@@ -123,8 +161,7 @@ function resolveUser(search, success, fail, after)
 			last = entry.user.id
 			discriminator = entry.user.username.."#"..entry.user.discriminator
 
-			if search == entry.user.id or -- Snowflake-ID
-			   search == discriminator or -- Full username
+			if search == discriminator or -- Full username
 			   search == entry.user.username or -- "small" username
 			   search == entry.nick then -- Nickname
 				success(entry.user.id, discriminator)
@@ -144,7 +181,7 @@ function resolveUser(search, success, fail, after)
 			if limit_reset ~= nil then limit_reset = tonumber(limit_reset) end
 
 			delay = (limit_remaining == 0 and limit_reset - os.time() or 0)
-			timer.Simple(delay, function() resolveUser(search, success, fail, last) end)
+			timer.Simple(delay, function() resolveUserBySearch(search, success, fail, last) end)
 			return
 		end
 
