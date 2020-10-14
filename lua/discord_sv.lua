@@ -240,7 +240,7 @@ end
 function unmuteAll()
 	unmute_count = 0
 	for i,ply in ipairs(player.GetAll()) do
-		if not ply:isDiscordMuted() then
+		if not muted[ply] then
 			continue
 		end
 
