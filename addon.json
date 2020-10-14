@@ -2,5 +2,5 @@
 	"title"		:	"Garry's Mod Discord Bot",
 	"type"		:	"ServerContent",
 	"tags"		:	[ "roleplay", "realism" ],
-	"ignore"	:	[ ".git*", "*.md", "LICENSE", "*.gma", "icon*" ]
+	"ignore"	:	[ ".git*", "*.md", "LICENSE", "*.gma", "icon*", ".idea*" ]
 }
