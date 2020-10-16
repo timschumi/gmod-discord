@@ -22,8 +22,6 @@ local cvar_token = CreateConVar("discord_token", "", FCVAR_ARCHIVE + FCVAR_DONTR
 local cvar_enabled = CreateConVar("discord_enabled", "1", FCVAR_ARCHIVE + FCVAR_NOTIFY, "Whether the Discord bot is enabled at all.")
 local cvar_api = CreateConVar("discord_api", "https://discord.com/api", FCVAR_ARCHIVE, "The API server that the bot should use.")
 
-local muted = {}
-
 local ids = include("keyvalstore.lua"):new("discord.dat")
 
 local plymeta = FindMetaTable("Player")
@@ -199,11 +197,12 @@ function plymeta:setDiscordMuted(val)
 	end
 
 	-- Is the player already muted/unmuted?
-	if (val == (muted[self] == true)) then
+	if (val == self.discord_muted) then
 		return
 	end
 
-	muted[self] = val
+	local old_state = self.discord_muted
+	self.discord_muted = val
 	request("PATCH", "/guilds/"..cvar_guild:GetString().."/members/"..self:getDiscordID(), function(code, body, headers)
 		if code == 204 then
 			if val then
@@ -220,7 +219,7 @@ function plymeta:setDiscordMuted(val)
 			return
 		end
 
-		muted[self] = not val
+		self.discord_muted = old_state
 		response = util.JSONToTable(body)
 
 		message = "Error while muting: "..code.."/"..response.code.." - "..response.message
@@ -240,7 +239,7 @@ end
 function unmuteAll()
 	unmute_count = 0
 	for i,ply in ipairs(player.GetAll()) do
-		if not muted[ply] then
+		if not ply.discord_muted then
 			continue
 		end
 
