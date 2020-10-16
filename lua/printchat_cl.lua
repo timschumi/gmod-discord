@@ -1,14 +1,8 @@
 net.Receive("printChat", function()
 	local items = {}
 
-	local id = net.ReadString()
-	while id ~= "e" do
-		if id == "s" then
-			table.insert(items, net.ReadString())
-		elseif id == "t" then
-			table.insert(items, net.ReadTable())
-		end
-		id = net.ReadString()
+	for _ = 1, net.ReadUInt(16) do
+		items[#items + 1] = net.ReadType()
 	end
 
 	chat.AddText(unpack(items))

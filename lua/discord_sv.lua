@@ -225,7 +225,7 @@ function plymeta:setDiscordMuted(val)
 
 		message = "Error while muting: "..code.."/"..response.code.." - "..response.message
 
-		printChat(self, Color(255, 70, 70), message)
+		self:printChat(Color(255, 70, 70), message)
 		err(message.." ("..self:GetName()..")")
 
 		-- Don't activate the failsafe on the following errors
@@ -259,12 +259,12 @@ function unmuteAll()
 end
 
 function sendHelp(ply)
-	printChat(ply, "Say '!discord <ident>' in the chat to connect to Discord.")
-	printChat(ply, "'ident' can be one of the following:")
-	printChat(ply, "  - Snowflake-ID (right-click in user list > 'Copy ID' while in developer mode)")
-	printChat(ply, "  - Full username with discriminator (e.g. 'timschumi#0319')")
-	printChat(ply, "  - \"Small\" username (e.g. 'timschumi')")
-	printChat(ply, "  - Guild-specific nickname")
+	ply:printChat("Say '!discord <ident>' in the chat to connect to Discord.")
+	ply:printChat("'ident' can be one of the following:")
+	ply:printChat("  - Snowflake-ID (right-click in user list > 'Copy ID' while in developer mode)")
+	ply:printChat("  - Full username with discriminator (e.g. 'timschumi#0319')")
+	ply:printChat("  - \"Small\" username (e.g. 'timschumi')")
+	ply:printChat("  - Guild-specific nickname")
 end
 
 hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
@@ -277,11 +277,11 @@ hook.Add("PlayerSay", "discord_PlayerSay", function(ply,msg)
 	end
 
 	resolveUser(id, function(id, name)
-		printChat(ply, Color(70, 255, 70), "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
-		printChat(ply, Color(240, 240, 240), "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
+		ply:printChat(Color(70, 255, 70), "Discord user '"..name.."' successfully bound to SteamID '"..ply:SteamID().."'")
+		ply:printChat(Color(240, 240, 240), "If I chose the wrong user, please use an unique identifying option, like the full username or the Snowflake-ID.")
 		ply:setDiscordID(id)
 	end, function(reason)
-		printChat(ply, Color(255, 70, 70), reason)
+		ply:printChat(Color(255, 70, 70), reason)
 	end)
 
 	return ""
@@ -289,9 +289,9 @@ end)
 
 hook.Add("PlayerInitialSpawn", "discord_PlayerInitialSpawn", function(ply)
 	if (ply:getDiscordID()) then
-		printChat(ply, "You are connected to Discord.")
+		ply:printChat("You are connected to Discord.")
 	else
-		printChat(ply, "You are not connected to Discord.")
+		ply:printChat("You are not connected to Discord.")
 		sendHelp(ply)
 	end
 end)

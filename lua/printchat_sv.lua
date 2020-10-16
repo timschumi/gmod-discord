@@ -1,27 +1,23 @@
 util.AddNetworkString("printChat")
 
-function printChat(ply, ...)
-	net.Start("printChat")
-
-	for i,v in ipairs{...} do
-		if type(v) == "string" then
-			net.WriteString("s")
-			net.WriteString(v)
-		elseif type(v) == "table" then
-			net.WriteString("t")
-			net.WriteTable(v)
-		end
-	end
-
-	net.WriteString("e")
-
-	if ply == nil then
-		net.Broadcast()
-	else
-		net.Send(ply)
-	end
+local plymeta = FindMetaTable("Player")
+if not plymeta then
+	ErrorNoHalt("[printchat] Could not find the `Player` metatable. Huh.\n")
+	return
 end
 
-function printChatAll(...)
-	printChat(nil, ...)
+function plymeta:printChat(...)
+	net.Start("printChat")
+
+	local items = {...}
+
+	-- Transfer the number of items
+	net.WriteUInt(#items, 16)
+
+	-- Transfer the actual items
+	for i = 1, #items do
+		net.WriteType(items[i])
+	end
+
+	net.Send(self)
 end
