@@ -34,7 +34,7 @@ function plymeta:getDiscordID() return ids:get(self:SteamID()) end
 function plymeta:setDiscordID(id) return ids:set(self:SteamID(), id) end
 
 
-if pcall(require, "chttp") then
+if pcall(require, "chttp") and CHTTP ~= nil then
 	log("Using CHTTP implementation.")
 	discordHTTP = CHTTP
 else
